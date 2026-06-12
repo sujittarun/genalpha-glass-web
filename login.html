@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Manager Login — Gen Alpha Cricket Academy</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .login-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 20px; }
+    .login-card { width: min(420px, 100%); padding: var(--gap-5) var(--gap-4); display: flex; flex-direction: column; gap: var(--gap-3); }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <section class="glass login-card reveal">
+      <div class="center" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <img src="assets/img/gen-alpha-favicon-512.png" alt="Gen Alpha" style="width:68px;border-radius:18px;box-shadow:0 8px 26px rgba(2,6,20,.55);" />
+        <div>
+          <p class="kicker">Manager access</p>
+          <h1 style="font-size:22px;">Sign in to the console</h1>
+        </div>
+      </div>
+      <form id="loginForm" style="display:flex;flex-direction:column;gap:14px;">
+        <label class="field"><span>Manager email</span>
+          <input id="email" type="email" autocomplete="username" placeholder="manager@genalpha.com" required />
+        </label>
+        <label class="field"><span>Password</span>
+          <span style="position:relative;display:block;">
+            <input id="password" type="password" autocomplete="current-password" placeholder="Enter password" required style="padding-right:46px;" />
+            <button type="button" id="pwToggle" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;border-radius:10px;background:transparent;color:var(--ink-low);cursor:pointer;display:grid;place-items:center;">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </span>
+        </label>
+        <p id="loginMsg" class="form-msg" aria-live="polite"></p>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="loginBtn">Login</button>
+      </form>
+      <a href="index.html" class="center faint" style="font-size:12.5px;">← Back to public admission page</a>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/core.js?v=4"></script>
+  <script>
+    (function () {
+      const { client, getSession } = window.GA;
+      const bg = document.createElement("div"); bg.className = "ga-bg"; document.body.prepend(bg);
+      window.GA.mountThemeToggle();
+      const next = new URLSearchParams(location.search).get("next") || "dashboard.html";
+
+      const pw = document.getElementById("password");
+      document.getElementById("pwToggle").addEventListener("click", () => {
+        pw.type = pw.type === "password" ? "text" : "password";
+      });
+
+      getSession().then((s) => { if (s) location.replace(next); });
+
+      const msg = document.getElementById("loginMsg");
+      document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("loginBtn");
+        btn.disabled = true;
+        msg.textContent = "Signing in…"; msg.className = "form-msg";
+        const { error } = await client.auth.signInWithPassword({
+          email: document.getElementById("email").value.trim(),
+          password: document.getElementById("password").value,
+        });
+        if (error) {
+          btn.disabled = false;
+          msg.textContent = error.message || "Login failed.";
+          msg.className = "form-msg error";
+          return;
+        }
+        location.replace(next);
+      });
+    })();
+  </script>
+</body>
+</html>

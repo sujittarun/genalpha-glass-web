@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Player Profile — Gen Alpha Manager</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .profile-hero { display: flex; gap: var(--gap-4); align-items: center; padding: var(--gap-4); flex-wrap: wrap; }
+    .avatar {
+      width: 84px; height: 84px; border-radius: 26px; flex: none;
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-size: 32px; font-weight: 800; color: #1d1503;
+      background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+      box-shadow: 0 14px 34px rgba(245,185,66,.35), inset 0 1px 0 rgba(255,255,255,.5);
+    }
+    .p-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+    .d-item { padding: 12px 14px; border-radius: var(--r-md); background: var(--tile-bg); border: 1px solid var(--tile-border); }
+    .d-item .l { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-low); display: block; margin-bottom: 3px; }
+    .d-item .v { font-weight: 650; font-size: 14px; }
+    .d-item a.v { color: var(--tx-gold); }
+
+    /* Activity feed: payments + history merged chronologically */
+    .feed { display: flex; flex-direction: column; }
+    .feed-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-ico {
+      width: 34px; height: 34px; flex: none; border-radius: 12px;
+      display: grid; place-items: center; font-size: 14px; font-weight: 800;
+      border: 1px solid var(--tile-border); background: var(--tile-bg); color: var(--ink-mid);
+    }
+    .feed-ico svg { width: 16px; height: 16px; }
+    .feed-ico.pay { color: #1d1503; background: linear-gradient(135deg, var(--gold-400), var(--gold-500)); border-color: transparent; box-shadow: 0 5px 14px rgba(245,185,66,.35); }
+    .feed-ico.att { color: var(--tx-green); background: rgba(74,222,128,.13); border-color: rgba(40,160,90,.3); }
+    .feed-ico.alert { color: var(--tx-red); background: rgba(255,107,107,.12); border-color: rgba(220,80,86,.3); }
+    .feed-ico.msg { color: var(--tx-blue); background: rgba(110,168,255,.14); border-color: rgba(60,110,200,.3); }
+    .feed-body { flex: 1; min-width: 0; }
+    .feed-title { font-size: 13.5px; font-weight: 650; color: var(--ink-hi); }
+    .feed-desc { font-size: 12.5px; color: var(--ink-low); margin-top: 1px; overflow-wrap: anywhere; }
+    .feed-side { text-align: right; flex: none; }
+    .feed-amt { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--tx-gold); }
+    .feed-date { font-size: 11px; color: var(--ink-faint); white-space: nowrap; margin-top: 2px; }
+    .feed-more { align-self: center; margin-top: 10px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1.1fr; gap: var(--gap-4); align-items: start; }
+    @media (max-width: 1099px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="ga-page">
+    <section class="glass profile-hero reveal" id="heroCard">
+      <div class="avatar" id="avatar">…</div>
+      <div class="grow">
+        <p class="kicker">Player profile</p>
+        <h1 id="pName" style="font-size:26px;">Loading…</h1>
+        <div class="p-meta" id="pMeta"></div>
+      </div>
+      <div class="flex wrap">
+        <a class="btn btn-glass" href="roster.html">← Players</a>
+      </div>
+    </section>
+
+    <section class="ga-grid cols-4 stat-row reveal d1">
+      <article class="glass stat-card"><p class="kicker">Days present</p><span class="stat-value num" id="sDays">—</span><p class="stat-copy" id="sDaysLast">—</p></article>
+      <article class="glass stat-card"><p class="kicker">Training duration</p><span class="stat-value num" id="sMonths">—</span><p class="stat-copy">Months in the academy</p></article>
+      <article class="glass stat-card"><p class="kicker">Total paid</p><span class="stat-value num" id="sPaid">—</span><p class="stat-copy" id="sPaidCount">—</p></article>
+      <article class="glass stat-card"><p class="kicker">Next fee due</p><span class="stat-value num" id="sDue" style="font-size:24px;">—</span><p class="stat-copy" id="sDueState">—</p></article>
+    </section>
+
+    <div class="two-col">
+      <section class="glass glass-card reveal d2">
+        <div class="card-head"><div><p class="kicker">Details</p><h2>Player information</h2></div></div>
+        <div class="detail-grid" id="detailGrid"></div>
+      </section>
+
+      <section class="glass glass-card reveal d3">
+        <div class="card-head">
+          <div><p class="kicker">History</p><h2>Activity</h2></div>
+          <div class="chip-row" id="feedFilter">
+            <button type="button" class="chip active" data-feed="all">All</button>
+            <button type="button" class="chip" data-feed="pay">Payments</button>
+            <button type="button" class="chip" data-feed="events">Events</button>
+          </div>
+        </div>
+        <div class="feed" id="feed"><p class="empty-state">Loading activity…</p></div>
+        <button type="button" class="btn btn-glass btn-sm feed-more hide" id="feedMore">Show older activity</button>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/core.js?v=4"></script>
+  <script src="assets/js/pages/player.js?v=4"></script>
+</body>
+</html>

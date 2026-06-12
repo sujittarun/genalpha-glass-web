@@ -1,0 +1,13 @@
+{
+  "name": "Gen Alpha Cricket Academy",
+  "short_name": "Gen Alpha",
+  "description": "Gen Alpha Cricket Academy manager and admissions",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e8eef8",
+  "theme_color": "#e8eef8",
+  "icons": [
+    { "src": "assets/img/gen-alpha-favicon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/gen-alpha-favicon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

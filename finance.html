@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Finance — Gen Alpha Manager</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .range-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .range-bar input[type="date"] { width: auto; padding: 9px 13px; font-size: 13px; }
+    .fin-chart { display: flex; align-items: flex-end; gap: 12px; height: 210px; padding: 10px 4px 0; overflow-x: auto; }
+    .fc-col { flex: 1; min-width: 56px; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; cursor: pointer; }
+    .fc-bars { display: flex; gap: 5px; align-items: flex-end; flex: 1; width: 100%; justify-content: center; }
+    .fc-bar { width: 14px; border-radius: 7px 7px 3px 3px; min-height: 3px; transition: height .6s var(--ease-spring), filter .2s ease; }
+    .fc-col:hover .fc-bar { filter: brightness(1.25); }
+    .fc-bar.rev { background: linear-gradient(180deg, var(--green-400), rgba(74,222,128,.35)); box-shadow: 0 0 16px rgba(74,222,128,.25); }
+    .fc-bar.exp { background: linear-gradient(180deg, var(--red-400), rgba(255,107,107,.3)); }
+    .fc-label { font-size: 10.5px; color: var(--ink-low); white-space: nowrap; }
+    .sub-metrics { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-mid); }
+    .sub-metrics strong { color: var(--ink-hi); }
+    @media (max-width: 767px) { .exp-table-wrap { display:none; } }
+    @media (min-width: 768px) { #expCards { display:none; } }
+    #expCards { display: flex; flex-direction: column; gap: 10px; }
+  </style>
+</head>
+<body>
+  <main class="ga-page">
+    <section class="glass glass-card tight reveal">
+      <div class="range-bar">
+        <div class="chip-row" id="rangeChips">
+          <button class="chip active" data-range="this-month">This month</button>
+          <button class="chip" data-range="last-month">Last month</button>
+          <button class="chip" data-range="3m">Last 3 months</button>
+          <button class="chip" data-range="year">This year</button>
+          <button class="chip" data-range="all">All time</button>
+        </div>
+        <div class="flex" style="margin-left:auto;">
+          <input type="date" id="fromDate" aria-label="From date" />
+          <span class="faint">→</span>
+          <input type="date" id="toDate" aria-label="To date" />
+        </div>
+      </div>
+    </section>
+
+    <section class="ga-grid cols-4 stat-row reveal d1">
+      <article class="glass glass-hover stat-card"><p class="kicker">Revenue</p><span class="stat-value num" id="mRevenue">—</span>
+        <div class="sub-metrics"><span>Joining <strong class="num" id="mJoining">—</strong></span><span>Renewals <strong class="num" id="mRenewal">—</strong></span></div>
+      </article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Expenses</p><span class="stat-value num" id="mExpenses">—</span><p class="stat-copy" id="mExpenseCount">—</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Net</p><span class="stat-value num" id="mNet">—</span><p class="stat-copy">Revenue minus expenses</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Payments</p><span class="stat-value num" id="mPayments">—</span><p class="stat-copy">Payments received in range</p></article>
+    </section>
+
+    <section class="glass glass-card reveal d2">
+      <div class="card-head">
+        <div><p class="kicker">Trends</p><h2>Revenue vs expenses</h2></div>
+        <div class="flex"><span class="pill green">● Revenue</span><span class="pill red">● Expenses</span></div>
+      </div>
+      <div class="fin-chart" id="finChart"></div>
+    </section>
+
+    <section class="glass glass-card reveal d3">
+      <div class="card-head">
+        <div><p class="kicker">Outgoing</p><h2>Expenses</h2></div>
+        <button class="btn btn-primary" id="addExpenseBtn">+ Add expense</button>
+      </div>
+      <div class="table-wrap exp-table-wrap">
+        <table class="ga-table">
+          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Paid by</th><th>Comment</th><th></th></tr></thead>
+          <tbody id="expBody"></tbody>
+        </table>
+      </div>
+      <div id="expCards"></div>
+      <div id="expEmpty" class="empty-state hide">No expenses in this range.</div>
+    </section>
+  </main>
+
+  <!-- Add expense modal -->
+  <div class="ga-modal-backdrop" id="expenseModal">
+    <section class="glass ga-modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div><p class="kicker">Finance</p><h3>Add expense</h3></div>
+        <button class="btn btn-ghost btn-sm" data-close-modal="expenseModal">Close</button>
+      </div>
+      <form id="expenseForm" style="display:flex;flex-direction:column;gap:14px;">
+        <label class="field"><span>Type</span><select id="xType" required></select></label>
+        <label class="field"><span>Amount (₹)</span><input id="xAmount" type="number" min="1" step="1" required /></label>
+        <label class="field"><span>Date</span><input id="xDate" type="date" required /></label>
+        <label class="field"><span>Paid by</span><select id="xPaidBy" required></select></label>
+        <label class="field"><span>Comment</span><input id="xComment" placeholder="Optional note" /></label>
+        <p id="xMsg" class="form-msg"></p>
+        <button type="submit" class="btn btn-primary btn-lg" id="xSaveBtn">Save expense</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/core.js?v=4"></script>
+  <script src="assets/js/pages/finance.js?v=1"></script>
+</body>
+</html>

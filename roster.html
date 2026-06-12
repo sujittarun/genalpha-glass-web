@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Players — Gen Alpha Manager</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .roster-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .roster-toolbar .search { flex: 1; min-width: 220px; }
+    .filters-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .filters-row select { width: auto; min-width: 120px; padding: 9px 34px 9px 13px; font-size: 13px; }
+    #cardsList { display: none; flex-direction: column; gap: 10px; }
+    .edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+    .edit-grid .full { grid-column: 1 / -1; }
+    .show-more-row { display: flex; justify-content: center; padding: 14px 0 2px; }
+
+    /* skeleton loading rows */
+    .sk-row { display: flex; gap: 14px; padding: 13px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+    .sk-row .skeleton { height: 14px; }
+
+    /* payment modal v2 */
+    .pr-context {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 12px 14px; border-radius: var(--r-md);
+      background: var(--tile-bg); border: 1px solid var(--tile-border);
+    }
+    .pr-context .who { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+    .pr-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: var(--r-md); background: var(--pill-bg); border: 1px solid var(--tile-border); }
+    .pr-seg button {
+      padding: 9px 10px; border: none; border-radius: 11px; background: transparent;
+      color: var(--ink-mid); font-size: 13px; font-weight: 650; cursor: pointer; transition: all .25s ease;
+    }
+    .pr-seg button.active { color: #1d1503; background: linear-gradient(135deg, var(--gold-400), var(--gold-500)); box-shadow: 0 5px 14px rgba(245,185,66,.3); }
+    .plan-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .plan-chip {
+      display: flex; flex-direction: column; gap: 1px; padding: 10px 12px; border-radius: var(--r-md);
+      border: 1px solid var(--tile-border); background: var(--tile-bg); cursor: pointer; text-align: left;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .plan-chip:hover { border-color: var(--input-border-hover); }
+    .plan-chip.active { border-color: rgba(220,160,40,.6); background: rgba(245,185,66,.12); box-shadow: 0 0 0 2px rgba(245,185,66,.18); }
+    .plan-chip .pl { font-size: 12.5px; font-weight: 700; color: var(--ink-hi); }
+    .plan-chip .pa { font-size: 11.5px; color: var(--tx-gold); font-weight: 700; }
+    .pr-preview {
+      padding: 11px 14px; border-radius: var(--r-md); font-size: 12.5px; line-height: 1.6;
+      background: rgba(110,168,255,.10); border: 1px solid rgba(60,110,200,.25); color: var(--ink-mid);
+    }
+    .pr-preview strong { color: var(--ink-hi); }
+    .pr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 767px) {
+      #tableWrap { display: none; }
+      #cardsList { display: flex; }
+      .edit-grid { grid-template-columns: 1fr; }
+      .pr-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="ga-page">
+    <section class="glass glass-card reveal">
+      <div class="card-head">
+        <div>
+          <p class="kicker">Gen Alpha records</p>
+          <h2>Players</h2>
+          <p class="sub" id="rosterCountSub">Loading players…</p>
+        </div>
+        <button class="btn btn-primary" id="addPlayerBtn">+ Add player</button>
+      </div>
+
+      <div class="roster-toolbar">
+        <input type="search" class="search" id="searchInput" placeholder="Search student by name…" />
+        <div class="chip-row" id="slotChips"></div>
+      </div>
+      <div class="filters-row mt-2">
+        <select id="statusFilter" aria-label="Status filter"><option value="active">Active</option><option value="discontinued">Discontinued</option><option value="all">All</option></select>
+        <select id="feeFilter" aria-label="Fee filter"><option value="all">Fee: all</option><option value="paid">Paid</option><option value="not-paid">Not paid</option><option value="overdue">Overdue</option></select>
+        <select id="typeFilter" aria-label="Type filter"><option value="all">Type: all</option><option value="new">New</option><option value="returning">Returning</option></select>
+        <select id="jerseyFilter" aria-label="Jersey filter"><option value="all">Jersey: all</option><option value="not-set">Not set</option></select>
+      </div>
+
+      <div class="table-wrap mt-3" id="tableWrap">
+        <table class="ga-table">
+          <thead><tr>
+            <th>Player</th><th>Age</th><th>Slot</th><th>Joined</th><th>Fee status</th><th>Next due</th><th>Jersey</th><th>Contact</th><th></th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div id="cardsList" class="mt-3"></div>
+      <div id="emptyState" class="empty-state hide">No players match the current filters.</div>
+      <div class="show-more-row hide" id="showMoreRow">
+        <button type="button" class="btn btn-glass btn-sm" id="showMoreBtn">Show more players</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add / edit player modal -->
+  <div class="ga-modal-backdrop" id="editModal">
+    <section class="glass ga-modal wide" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div><p class="kicker" id="editKicker">Edit player</p><h3 id="editTitle">Player</h3></div>
+        <button class="btn btn-ghost btn-sm" data-close-modal="editModal">Close</button>
+      </div>
+      <form id="editForm" class="edit-grid">
+        <label class="field"><span>Name</span><input id="eName" required /></label>
+        <label class="field"><span>Age</span><input id="eAge" type="number" min="4" max="30" required /></label>
+        <label class="field"><span>Time slot</span><select id="eSlot" required></select></label>
+        <label class="field"><span>Join date</span><input id="eJoinDate" type="date" required /></label>
+        <label class="field"><span>Father / guardian</span><input id="eGuardian" /></label>
+        <label class="field"><span>Mobile number</span><input id="eMobile" type="tel" maxlength="10" inputmode="numeric" /></label>
+        <label class="field"><span>Alternate number</span><input id="eAltMobile" type="tel" maxlength="10" inputmode="numeric" /></label>
+        <label class="field"><span>School</span><input id="eSchool" /></label>
+        <label class="field"><span>Grade</span><input id="eGrade" /></label>
+        <label class="field"><span>Jersey size</span><select id="eJerseySize"><option value="">Not set</option></select></label>
+        <label class="field"><span>Jersey pairs</span><input id="eJerseyPairs" type="number" min="0" step="1" /></label>
+        <label class="field"><span>Status</span>
+          <select id="eStatus"><option value="active">Active</option><option value="discontinued">Discontinued</option></select>
+        </label>
+        <label class="field hide" id="eDiscDateField"><span>Discontinued date</span><input id="eDiscDate" type="date" /></label>
+        <label class="field full"><span>Address</span><textarea id="eAddress" rows="2"></textarea></label>
+        <p id="editMsg" class="form-msg full"></p>
+        <div class="full flex wrap between">
+          <button type="submit" class="btn btn-primary grow" id="editSaveBtn">Save player</button>
+          <button type="button" class="btn btn-ghost" data-close-modal="editModal">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Record payment modal (v2) -->
+  <div class="ga-modal-backdrop" id="payRecordModal">
+    <section class="glass ga-modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div><p class="kicker">Record payment</p><h3 id="prTitle">Player</h3></div>
+        <button class="btn btn-ghost btn-sm" data-close-modal="payRecordModal">Close</button>
+      </div>
+      <form id="payRecordForm" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="pr-context">
+          <span class="who" id="prWho">Player</span>
+          <span class="pill" id="prCurrentDue">—</span>
+        </div>
+        <div class="pr-seg" id="prTypeSeg" role="tablist" aria-label="Payment type">
+          <button type="button" data-type="joining">Joining fee</button>
+          <button type="button" data-type="renewal" class="active">Renewal</button>
+        </div>
+        <div>
+          <p class="field" style="margin-bottom:8px;"><span>Plan</span></p>
+          <div class="plan-chips" id="prPlanChips"></div>
+        </div>
+        <div class="pr-row">
+          <label class="field"><span>Amount (₹)</span><input id="prAmount" type="number" min="0" step="1" required /></label>
+          <label class="field"><span>Payment date</span><input id="prDate" type="date" required /></label>
+        </div>
+        <div class="pr-preview" id="prPreview"></div>
+        <label class="field"><span>Comment <i class="opt">(optional)</i></span><input id="prComment" placeholder="e.g. Paid by GPay" /></label>
+        <p id="prMsg" class="form-msg"></p>
+        <button type="submit" class="btn btn-primary btn-lg" id="prSaveBtn">Save payment</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/fees.js?v=1"></script>
+  <script src="assets/js/core.js?v=4"></script>
+  <script src="assets/js/pages/roster.js?v=4"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Dashboard — Gen Alpha Manager</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-3); }
+    .alert-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+    .alert-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: var(--r-md);
+      background: var(--tile-bg); border: 1px solid var(--tile-border);
+      transition: border-color .25s ease, background .25s ease;
+    }
+    .alert-row:hover { border-color: var(--input-border-hover); background: var(--row-hover); }
+    .alert-row a { color: var(--ink-hi); font-weight: 650; font-size: 13.5px; }
+    .alert-row a:hover { color: var(--tx-gold); }
+    .movement { display: flex; align-items: flex-end; gap: 10px; height: 190px; padding: 8px 4px 0; overflow-x: auto; }
+    .mv-col { flex: 1; min-width: 52px; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .mv-bars { display: flex; gap: 4px; align-items: flex-end; flex: 1; width: 100%; justify-content: center; }
+    .mv-bar { width: 12px; border-radius: 6px 6px 3px 3px; min-height: 3px; transition: height .6s var(--ease-spring); }
+    .mv-bar.joined { background: linear-gradient(180deg, var(--gold-400), rgba(245,185,66,.45)); box-shadow: 0 0 14px rgba(245,185,66,.3); }
+    .mv-bar.left { background: linear-gradient(180deg, var(--red-400), rgba(255,107,107,.35)); }
+    .mv-label { font-size: 10.5px; color: var(--ink-low); white-space: nowrap; }
+    @media (max-width: 767px) { .alerts-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="ga-page">
+    <section class="stat-row ga-grid cols-4 reveal">
+      <article class="glass glass-hover stat-card"><p class="kicker">Players joined</p><span class="stat-value num" id="statJoined">—</span><p class="stat-copy">Total academy kids registered</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Active players</p><span class="stat-value num" id="statActive">—</span><p class="stat-copy">Currently training</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Returning students</p><span class="stat-value num" id="statReturning">—</span><p class="stat-copy">Renewed after joining</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Pending review</p><span class="stat-value num" id="statPending">—</span><p class="stat-copy"><a href="review.html" class="gold">Open review queue →</a></p></article>
+    </section>
+
+    <section class="alerts-grid reveal d1">
+      <article class="glass glass-card tight">
+        <div class="card-head" style="margin-bottom:10px;">
+          <div><p class="kicker">Fees to collect</p><h2 style="font-size:17px;">Joining fee pending</h2></div>
+          <span class="pill red" id="feesDueCount">0</span>
+        </div>
+        <div class="alert-list" id="feesDueList"><p class="empty-state">Loading…</p></div>
+      </article>
+      <article class="glass glass-card tight">
+        <div class="card-head" style="margin-bottom:10px;">
+          <div><p class="kicker">Renewal follow-up</p><h2 style="font-size:17px;">Due / overdue renewals</h2></div>
+          <span class="pill blue" id="renewalDueCount">0</span>
+        </div>
+        <div class="alert-list" id="renewalDueList"><p class="empty-state">Loading…</p></div>
+      </article>
+    </section>
+
+    <section class="glass glass-card reveal d2">
+      <div class="card-head">
+        <div><p class="kicker">Timeline</p><h2>Student movement</h2></div>
+        <div class="flex">
+          <span class="pill gold">● Joined</span>
+          <span class="pill red">● Left</span>
+        </div>
+      </div>
+      <div class="movement" id="movementChart"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/fees.js?v=1"></script>
+  <script src="assets/js/core.js?v=4"></script>
+  <script src="assets/js/pages/dashboard.js?v=1"></script>
+</body>
+</html>

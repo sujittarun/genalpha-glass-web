@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Admission Review — Gen Alpha Manager</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .review-list { display: flex; flex-direction: column; gap: var(--gap-3); }
+    .review-card { padding: var(--gap-3) var(--gap-4); display: flex; flex-direction: column; gap: 12px; }
+    .rv-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .rv-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+    .rv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+    .rv-item { font-size: 12.5px; }
+    .rv-item .l { color: var(--ink-low); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; display: block; }
+    .rv-item .v { color: var(--ink-hi); font-weight: 600; }
+    .rv-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <main class="ga-page">
+    <section class="glass glass-card reveal">
+      <div class="card-head">
+        <div>
+          <p class="kicker">Parent submission review</p>
+          <h2>Admissions waiting for approval</h2>
+          <p class="sub">Approve to create the player on the roster, or reject to remove the submission.</p>
+        </div>
+        <span class="pill gold" id="pendingPill">0 pending</span>
+      </div>
+      <div class="review-list" id="reviewList"><p class="empty-state">Loading…</p></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/core.js?v=4"></script>
+  <script src="assets/js/pages/review.js?v=1"></script>
+</body>
+</html>

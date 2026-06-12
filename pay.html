@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8eef8" />
+  <title>Pay Fees — Gen Alpha Cricket Academy</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <style>
+    .pay-wrap { max-width: 520px; margin: 0 auto; width: 100%; }
+    .pay-card { padding: var(--gap-4); display: flex; flex-direction: column; gap: var(--gap-3); align-items: center; text-align: center; }
+    .pay-amount-input { font-size: 26px; font-family: var(--font-display); font-weight: 700; text-align: center; }
+    .qr-shell { background: #fff; padding: 14px; border-radius: 18px; box-shadow: 0 14px 36px rgba(0,0,0,.45); }
+    .upi-row { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <main class="ga-page pay-wrap">
+    <section class="glass pay-card reveal">
+      <img src="assets/img/gen-alpha-favicon-512.png" alt="Gen Alpha Cricket Academy" style="width:74px;border-radius:20px;box-shadow:0 8px 24px rgba(2,6,20,.5);" />
+      <div>
+        <p class="kicker">Fee payment</p>
+        <h1 style="font-size:24px;">Gen Alpha Cricket Academy</h1>
+        <p class="muted" style="font-size:13.5px;margin-top:4px;">Pay your coaching fee securely via UPI.</p>
+      </div>
+
+      <label class="field" style="width:100%;max-width:280px;"><span>Amount (₹)</span>
+        <input id="amount" type="number" min="1" step="1" value="3500" class="pay-amount-input" />
+      </label>
+
+      <div class="qr-shell" id="qrBox"></div>
+
+      <div class="upi-row">
+        <span class="pill gold" id="upiIdPill"></span>
+        <button class="btn btn-glass btn-sm" id="copyUpi">Copy UPI ID</button>
+      </div>
+
+      <a class="btn btn-primary btn-lg btn-block only-mobile" id="payBtn" href="#">Open UPI app &amp; pay</a>
+
+      <p class="faint" style="font-size:12.5px;max-width:40ch;">
+        After payment, reply <strong>“Paid”</strong> on WhatsApp or send the payment screenshot.
+        The academy confirms your payment and updates your renewal.
+      </p>
+      <a href="index.html" class="faint" style="font-size:12.5px;">← Back to academy admissions</a>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="assets/js/config.js?v=1"></script>
+  <script>
+    (function () {
+      const cfg = window.GA_CONFIG.payment;
+      const bg = document.createElement("div"); bg.className = "ga-bg"; document.body.prepend(bg);
+
+      // Standalone theme toggle (this page does not load core.js)
+      const SUN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>';
+      const MOON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.6 8.6 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8z"/></svg>';
+      const tBtn = document.createElement("button");
+      tBtn.className = "theme-toggle floating";
+      tBtn.type = "button";
+      const syncT = () => { tBtn.innerHTML = document.documentElement.dataset.theme === "dark" ? SUN : MOON; };
+      tBtn.addEventListener("click", () => {
+        const t = (localStorage.getItem("ga-theme") || "light") === "dark" ? "light" : "dark";
+        localStorage.setItem("ga-theme", t);
+        document.documentElement.dataset.theme = t;
+        syncT();
+      });
+      syncT();
+      document.body.appendChild(tBtn);
+
+      const params = new URLSearchParams(location.search);
+      const amountInput = document.getElementById("amount");
+      if (params.get("amount")) amountInput.value = params.get("amount");
+      document.getElementById("upiIdPill").textContent = cfg.upiId;
+
+      const eventId = params.get("event") || "";
+      let qr = null;
+      function upiUrl() {
+        const am = Math.max(1, Number(amountInput.value) || 0);
+        return `upi://pay?pa=${encodeURIComponent(cfg.upiId)}&pn=${encodeURIComponent(cfg.payeeName)}&am=${am}&cu=INR&tn=${encodeURIComponent("Gen Alpha fee payment")}`;
+      }
+      function render() {
+        const box = document.getElementById("qrBox");
+        box.innerHTML = "";
+        qr = new QRCode(box, { text: upiUrl(), width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+        document.getElementById("payBtn").href = upiUrl();
+      }
+      amountInput.addEventListener("input", render);
+      render();
+
+      document.getElementById("copyUpi").addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(cfg.upiId); document.getElementById("copyUpi").textContent = "Copied ✔"; }
+        catch { /* ignore */ }
+        setTimeout(() => (document.getElementById("copyUpi").textContent = "Copy UPI ID"), 1600);
+      });
+
+      // WhatsApp renewal flow: report payment attempt when arriving from a reminder link
+      document.getElementById("payBtn").addEventListener("click", () => {
+        if (!eventId) return;
+        fetch(`${window.GA_CONFIG.supabaseUrl}/functions/v1/whatsapp-reminder`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "payment_attempted", event_id: eventId }),
+        }).catch(() => {});
+      });
+    })();
+  </script>
+</body>
+</html>
