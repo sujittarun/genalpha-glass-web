@@ -113,18 +113,10 @@
   spark("sparkJoined", months.map((m) => m.joined), "var(--gold-500)");
   spark("sparkActive", cumulative, "var(--blue-300)");
 
-  /* ---------- fee-collection donut ---------- */
+  /* ---------- fee collection (compact pill, no chart) ---------- */
   const paid = active.filter((s) => s.fees_paid).length;
-  const pending = active.length - paid;
   const pct = active.length ? Math.round((paid / active.length) * 100) : 0;
-  $("legPaid").textContent = paid;
-  $("legPending").textContent = pending;
-  $("donutPct").textContent = `${pct}%`;
-  const C = 2 * Math.PI * 52;
-  const ring = $("donutVal");
-  ring.style.strokeDasharray = `${C}`;
-  ring.style.strokeDashoffset = `${C}`;
-  requestAnimationFrame(() => { ring.style.strokeDashoffset = `${C * (1 - pct / 100)}`; });
+  $("collectedPill").textContent = `${pct}% fees collected`;
 
   /* ---------- needs attention ---------- */
   const byStudent = new Map();

@@ -464,6 +464,45 @@
     bg.appendChild(wrap);
   }
 
+  /* ---------- motion: animated page transitions ---------- */
+  // Internal page navigations fade/slide the current page out, then load the
+  // next (which fades in via the .ga-page enter animation in CSS).
+  if (!reduceMotion) {
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a[href]");
+      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      const href = a.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+      if (!/\.html(\?.*)?$/.test(href)) return;
+      e.preventDefault();
+      document.body.classList.add("ga-leaving");
+      setTimeout(() => { location.href = href; }, 200);
+    });
+    // restore on bfcache back-navigation
+    window.addEventListener("pageshow", () => document.body.classList.remove("ga-leaving"));
+  }
+
+  /* ---------- motion: tap ripple ---------- */
+  if (!reduceMotion) {
+    const RIPPLE_SEL = ".btn, .chip, .nav-tab, .dock-tab, .choice, .plan-chip, .att-item, .pa-item, .alert-row, .kpi, .stat-card, .theme-toggle, .pr-seg button";
+    document.addEventListener("pointerdown", (e) => {
+      const t = e.target.closest(RIPPLE_SEL);
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      const size = Math.max(r.width, r.height) * 1.05;
+      const sp = document.createElement("span");
+      sp.className = "ga-ripple";
+      sp.style.width = sp.style.height = `${size}px`;
+      sp.style.left = `${e.clientX - r.left - size / 2}px`;
+      sp.style.top = `${e.clientY - r.top - size / 2}px`;
+      if (getComputedStyle(t).position === "static") t.style.position = "relative";
+      t.style.overflow = "hidden";
+      t.appendChild(sp);
+      setTimeout(() => sp.remove(), 640);
+    }, { passive: true });
+  }
+
   function initMotion(root = document) { decorateBg(); initReveal(root); initCountUp(root); }
   document.addEventListener("DOMContentLoaded", () => initMotion());
   if (document.readyState !== "loading") initMotion();
