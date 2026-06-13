@@ -24,19 +24,22 @@
     .fc-label { font-size: 10.5px; color: var(--ink-low); white-space: nowrap; }
     .sub-metrics { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-mid); }
     .sub-metrics strong { color: var(--ink-hi); }
-    @media (max-width: 767px) { .exp-table-wrap { display:none; } }
-    @media (min-width: 768px) { #expCards { display:none; } }
     #expCards { display: flex; flex-direction: column; gap: 10px; }
+    @media (max-width: 767px) { .exp-table-wrap { display: none; } }
+    @media (min-width: 768px) { #expCards { display: none; } }
+    /* make the revenue line unmistakable against the warm glass backdrop */
+    #finChart .fin-rev-line { stroke-width: 3.4; }
+    #finChart .fin-exp-line { stroke-width: 2.4; }
   </style>
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <linearGradient id="gaRevGrad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#ffcf6a" /><stop offset="1" stop-color="#e8a31e" />
+        <stop offset="0" stop-color="#e8920c" /><stop offset="1" stop-color="#b45309" />
       </linearGradient>
       <linearGradient id="gaRevArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="rgba(245,185,66,0.40)" /><stop offset="1" stop-color="rgba(245,185,66,0)" />
+        <stop offset="0" stop-color="rgba(232,146,12,0.45)" /><stop offset="1" stop-color="rgba(232,146,12,0)" />
       </linearGradient>
     </defs>
   </svg>
