@@ -51,14 +51,8 @@
     const max = Math.max(1, ...months.map((m) => Math.max(m.rev, m.exp)));
     const X = (i) => pad + (n === 1 ? innerW / 2 : (i * innerW) / (n - 1));
     const Y = (v) => 14 + innerH - (v / max) * innerH;
-    const smooth = (vals) => {
-      let d = `M ${X(0)} ${Y(vals[0])}`;
-      for (let i = 1; i < n; i++) {
-        const xc = (X(i - 1) + X(i)) / 2, yc = (Y(vals[i - 1]) + Y(vals[i])) / 2;
-        d += ` Q ${X(i - 1)} ${Y(vals[i - 1])} ${xc} ${yc}`;
-      }
-      return d + ` T ${X(n - 1)} ${Y(vals[n - 1])}`;
-    };
+    // straight segments through the real data points — accurate, no overshoot
+    const smooth = (vals) => "M " + vals.map((v, i) => `${X(i)} ${Y(v)}`).join(" L ");
     const revLine = smooth(months.map((m) => m.rev)), expLine = smooth(months.map((m) => m.exp));
     const revArea = `${revLine} L ${X(n - 1)} ${14 + innerH} L ${X(0)} ${14 + innerH} Z`;
     const grid = [0.5, 1].map((g) => `<line x1="${pad}" y1="${14 + innerH * g}" x2="${W - pad}" y2="${14 + innerH * g}"/>`).join("");
