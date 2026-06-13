@@ -361,6 +361,99 @@
     }
   });
 
+  /* ---------- motion: scroll reveal ---------- */
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.documentElement.classList.add("ga-js");
+  let revealIO = null;
+  function initReveal(root = document) {
+    const els = [...root.querySelectorAll(".reveal:not([data-seen])")];
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      els.forEach((el) => { el.classList.add("in"); el.setAttribute("data-seen", "1"); });
+      return;
+    }
+    if (!revealIO) {
+      revealIO = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) { en.target.classList.add("in"); revealIO.unobserve(en.target); }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -7% 0px" });
+    }
+    els.forEach((el) => { el.setAttribute("data-seen", "1"); revealIO.observe(el); });
+  }
+
+  /* ---------- motion: count-up numbers ---------- */
+  // Opt-in via [data-countup]; preserves prefix/suffix (₹, +, etc.) and Indian grouping.
+  const COUNT_RE = /-?[\d,]*\.?\d+/;
+  function runCount(el, toText) {
+    const m = String(toText).match(COUNT_RE);
+    if (!m) { el.textContent = toText; return; }
+    const target = parseFloat(m[0].replace(/,/g, ""));
+    if (!isFinite(target)) { el.textContent = toText; return; }
+    const prefix = toText.slice(0, m.index);
+    const suffix = toText.slice(m.index + m[0].length);
+    const decimals = (m[0].split(".")[1] || "").length;
+    const from = parseFloat(el.getAttribute("data-count-cur") || "0") || 0;
+    const fmt = new Intl.NumberFormat("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    el.setAttribute("data-count-cur", String(target));
+    el.__gaBusy = true;
+    const dur = 950, t0 = performance.now();
+    function frame(now) {
+      const p = Math.min(1, (now - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = prefix + fmt.format(from + (target - from) * eased) + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+      else { el.textContent = toText; el.__gaBusy = false; }
+    }
+    requestAnimationFrame(frame);
+  }
+  function initCountUp(root = document) {
+    if (reduceMotion) return;
+    root.querySelectorAll("[data-countup]").forEach((el) => {
+      if (el.__gaCount) return;
+      el.__gaCount = true;
+      const mo = new MutationObserver(() => {
+        if (el.__gaBusy) return;
+        const txt = el.textContent.trim();
+        if (!COUNT_RE.test(txt) || txt === el.getAttribute("data-count-done")) return;
+        el.setAttribute("data-count-done", txt);
+        runCount(el, txt);
+      });
+      mo.observe(el, { childList: true, characterData: true, subtree: true });
+    });
+  }
+
+  /* ---------- motion: cursor-following glass highlight ---------- */
+  if (!reduceMotion && window.matchMedia("(hover: hover)").matches) {
+    document.addEventListener("pointermove", (e) => {
+      const card = e.target.closest?.(".glass-hover");
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      card.style.setProperty("--my", `${e.clientY - r.top}px`);
+    }, { passive: true });
+  }
+
+  /* ---------- cricket-themed animated backdrop ---------- */
+  // Drifting seamed cricket balls flying along curved "shot" trajectories,
+  // plus a dashed ball-path arc — layered behind the glass on every page.
+  function decorateBg() {
+    const bg = document.querySelector(".ga-bg");
+    if (!bg || bg.querySelector(".ga-cricket") || reduceMotion) return;
+    const wrap = document.createElement("div");
+    wrap.className = "ga-cricket";
+    wrap.setAttribute("aria-hidden", "true");
+    wrap.innerHTML =
+      '<span class="cb cb1"></span><span class="cb cb2"></span><span class="cb cb3"></span>' +
+      '<svg class="cb-arc" viewBox="0 0 1440 900" preserveAspectRatio="none">' +
+      '<path d="M -40 760 Q 560 120 1480 520" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 14" stroke-linecap="round"/>' +
+      '</svg>';
+    bg.appendChild(wrap);
+  }
+
+  function initMotion(root = document) { decorateBg(); initReveal(root); initCountUp(root); }
+  document.addEventListener("DOMContentLoaded", () => initMotion());
+  if (document.readyState !== "loading") initMotion();
+
   /* ---------- exports ---------- */
   window.GA = {
     client, cfg,
@@ -370,6 +463,7 @@
     initManagerPage, initPublicPage, enhanceDateInputs,
     toggleTheme, mountThemeToggle, currentTheme,
     refreshReviewBadge,
+    initReveal, initCountUp,
     icons: I,
   };
 })();

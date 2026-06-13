@@ -60,6 +60,61 @@
   ["feePlan", "jerseyPairs", "customAmount"].forEach((id) => $(id).addEventListener("input", renderFees));
   renderFees();
 
+  /* ---- wizard navigation ---- */
+  const TOTAL_STEPS = 4;
+  let currentStep = 1;
+  const stepPanels = [...document.querySelectorAll(".adm-step")];
+  const stepperSteps = [...document.querySelectorAll("#admStepper .step")];
+  const stepperBars = [...document.querySelectorAll("#admStepper .bar")];
+
+  function showStep(n, scroll = true) {
+    currentStep = Math.min(TOTAL_STEPS, Math.max(1, n));
+    stepPanels.forEach((p) => p.classList.toggle("active", Number(p.dataset.step) === currentStep));
+    stepperSteps.forEach((s) => {
+      const sn = Number(s.dataset.step);
+      s.classList.toggle("active", sn === currentStep);
+      s.classList.toggle("done", sn < currentStep);
+    });
+    stepperBars.forEach((b, i) => b.style.setProperty("--fill", i < currentStep - 1 ? "100%" : "0%"));
+    $("admBack").classList.toggle("hide", currentStep === 1);
+    $("admNext").classList.toggle("hide", currentStep === TOTAL_STEPS);
+    $("submitBtn").classList.toggle("hide", currentStep !== TOTAL_STEPS);
+    if (scroll) document.getElementById("admissionFormPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Validate one step's required fields + phone-length rule on step 2.
+  function validateStep(n) {
+    const panel = stepPanels[n - 1];
+    for (const el of panel.querySelectorAll("input, select, textarea")) {
+      // Checkbox/radio are visually replaced (native control hidden) so a
+      // native validity bubble can't anchor to them — handle those explicitly.
+      if (el.type === "checkbox" || el.type === "radio") continue;
+      if (!el.checkValidity()) { el.reportValidity(); return false; }
+    }
+    if (n === 2) {
+      const p = $("parentContact").value.replace(/\D/g, "");
+      const a = $("alternateContact").value.replace(/\D/g, "");
+      if (p.length !== 10 || a.length !== 10) {
+        setMsg("Parent and alternate contact numbers must be exactly 10 digits.", "error");
+        ($("parentContact").value.replace(/\D/g, "").length !== 10 ? $("parentContact") : $("alternateContact")).focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  $("admNext").addEventListener("click", () => {
+    if (!validateStep(currentStep)) return;
+    setMsg("", "");
+    showStep(currentStep + 1);
+  });
+  $("admBack").addEventListener("click", () => { setMsg("", ""); showStep(currentStep - 1); });
+  // Click a completed step in the stepper to jump back to it.
+  stepperSteps.forEach((s) => s.addEventListener("click", () => {
+    const sn = Number(s.dataset.step);
+    if (sn < currentStep) showStep(sn);
+  }));
+
   /* ---- skills toggle ---- */
   $("readyToStart").addEventListener("change", () => {
     const off = $("readyToStart").checked;
@@ -98,21 +153,29 @@
     $("ageValue").textContent = "—";
     renderFees();
     setMsg("", "");
+    showStep(1, false);
   });
 
   $("admissionForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const form = $("admissionForm");
 
+    // Pressing Enter before the last step advances rather than submitting.
+    if (currentStep < TOTAL_STEPS) {
+      if (validateStep(currentStep)) { setMsg("", ""); showStep(currentStep + 1); }
+      return;
+    }
+
     const dob = dobIso();
     const age = calcAge(dob);
     const parentContact = $("parentContact").value.replace(/\D/g, "");
     const alternateContact = $("alternateContact").value.replace(/\D/g, "");
 
-    if (!form.reportValidity()) return;
-    if (!dob || age === null) return setMsg("Please complete the date of birth properly.", "error");
-    if (parentContact.length !== 10 || alternateContact.length !== 10)
-      return setMsg("Parent and alternate contact numbers must be exactly 10 digits.", "error");
+    // Re-validate every step and jump to the first that fails.
+    for (let s = 1; s <= TOTAL_STEPS; s++) {
+      if (!validateStep(s)) { showStep(s); return; }
+    }
+    if (!dob || age === null) { showStep(1); return setMsg("Please complete the date of birth properly.", "error"); }
     if (!$("consentAccepted").checked || !$("termsAccepted").checked)
       return setMsg("Please accept both consent checkboxes.", "error");
 
@@ -175,6 +238,7 @@
     $("joinDate").value = todayIso();
     $("ageValue").textContent = "—";
     renderFees();
+    showStep(1, false);
     client.rpc("peek_next_admission_reg_no").then(({ data: next }) => { const r = extractRegNo(next); if (r) $("regNo").textContent = r; });
     window.scrollTo({ top: 0, behavior: "smooth" });
   });

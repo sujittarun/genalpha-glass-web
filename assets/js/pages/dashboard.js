@@ -1,6 +1,7 @@
-/* Manager dashboard — stats, fee alerts, student movement */
+/* Manager dashboard — KPIs, animated growth area chart, fee-collection donut,
+   sparklines and a compact "needs attention" card. */
 (async function () {
-  const { client, esc, fmtDate, todayIso } = window.GA;
+  const { client, esc, fmtMoney, todayIso } = window.GA;
   const session = await window.GA.initManagerPage("dashboard");
   if (!session) return;
 
@@ -16,20 +17,121 @@
   const payments = paymentsRes.data || [];
   const active = students.filter((s) => !s.discontinued);
 
-  /* ---- stats ---- */
-  $("statJoined").textContent = students.length;
-  $("statActive").textContent = active.length;
+  /* ---------- KPIs ---------- */
   const renewedIds = new Set(payments.filter((p) => p.payment_type === "renewal").map((p) => p.student_id));
-  $("statReturning").textContent = active.filter((s) => renewedIds.has(s.id)).length;
+  const returning = active.filter((s) => renewedIds.has(s.id)).length;
+  $("statActive").textContent = active.length;
+  $("statJoined").textContent = students.length;
+  $("statReturning").textContent = returning;
   $("statPending").textContent = pendingRes.count ?? 0;
+  $("returnRate").textContent = active.length ? `${Math.round((returning / active.length) * 100)}% of active` : "—";
 
-  /* ---- due dates ---- */
+  /* ---------- monthly series (last 12 months) ---------- */
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString("en-IN", { month: "short" }), joined: 0 });
+  }
+  const mIndex = new Map(months.map((m, i) => [m.key, i]));
+  const firstKey = months[0].key;
+  let baseCount = 0; // players registered before the window
+  students.forEach((s) => {
+    const k = String(s.join_date || "").slice(0, 7);
+    if (mIndex.has(k)) months[mIndex.get(k)].joined++;
+    else if (k && k < firstKey) baseCount++;
+  });
+  let run = baseCount;
+  const cumulative = months.map((m) => (run += m.joined));
+  $("growthTotal").textContent = `${students.length} total`;
+
+  /* ---------- growth area chart (animated + interactive) ---------- */
+  function renderGrowth() {
+    const host = $("growthHost"), tip = $("growthTip");
+    const W = 620, H = 240, pad = 14, padB = 26, n = cumulative.length;
+    const innerW = W - pad * 2, innerH = H - 14 - padB;
+    const max = Math.max(...cumulative), min = Math.min(...cumulative);
+    const span = Math.max(1, max - min);
+    const lo = Math.max(0, min - span * 0.25), hi = max + span * 0.15;
+    const X = (i) => pad + (n === 1 ? innerW / 2 : (i * innerW) / (n - 1));
+    const Y = (v) => 14 + innerH - ((v - lo) / Math.max(1, hi - lo)) * innerH;
+
+    // smooth path via quadratic midpoints
+    let d = `M ${X(0)} ${Y(cumulative[0])}`;
+    for (let i = 1; i < n; i++) {
+      const xc = (X(i - 1) + X(i)) / 2, yc = (Y(cumulative[i - 1]) + Y(cumulative[i])) / 2;
+      d += ` Q ${X(i - 1)} ${Y(cumulative[i - 1])} ${xc} ${yc}`;
+    }
+    d += ` T ${X(n - 1)} ${Y(cumulative[n - 1])}`;
+    const area = `${d} L ${X(n - 1)} ${14 + innerH} L ${X(0)} ${14 + innerH} Z`;
+
+    const grid = [0.5, 1].map((g) => `<line class="g" x1="${pad}" y1="${14 + innerH * g}" x2="${W - pad}" y2="${14 + innerH * g}"/>`).join("");
+    const dots = cumulative.map((v, i) => `<circle class="area-dot" data-i="${i}" cx="${X(i)}" cy="${Y(v)}" r="4.5"/>`).join("");
+    const labels = months.map((m, i) => (i % 2 === 0 ? `<text class="chart-xlabel" x="${X(i)}" y="${H - 6}" text-anchor="middle">${m.label}</text>` : "")).join("");
+
+    host.insertAdjacentHTML("afterbegin",
+      `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <g class="chart-grid">${grid}</g>
+        <line class="area-guide" id="gGuide" x1="0" y1="14" x2="0" y2="${14 + innerH}"/>
+        <path class="area-fill" d="${area}" fill="url(#gaAreaGrad)"/>
+        <path class="area-line" d="${d}"/>
+        ${dots}${labels}
+      </svg>`);
+
+    const line = host.querySelector(".area-line");
+    const fill = host.querySelector(".area-fill");
+    const guide = host.querySelector("#gGuide");
+    const dotEls = [...host.querySelectorAll(".area-dot")];
+    const L = line.getTotalLength();
+    line.style.strokeDasharray = L; line.style.strokeDashoffset = L;
+    requestAnimationFrame(() => { line.style.transition = "stroke-dashoffset 1.5s ease"; line.style.strokeDashoffset = "0"; fill.classList.add("in"); });
+
+    const rect = () => host.getBoundingClientRect();
+    host.addEventListener("pointermove", (e) => {
+      const r = rect(), frac = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+      const i = Math.round(frac * (n - 1));
+      const xFrac = X(i) / W, yFrac = Y(cumulative[i]) / H;
+      dotEls.forEach((dt, j) => dt.classList.toggle("act", j === i));
+      guide.setAttribute("x1", X(i)); guide.setAttribute("x2", X(i));
+      tip.style.left = `${xFrac * r.width}px`;
+      tip.style.top = `${yFrac * r.height}px`;
+      tip.innerHTML = `<span class="tv">${cumulative[i]}</span> players · ${months[i].label}`;
+      tip.classList.add("show");
+    });
+    host.addEventListener("pointerleave", () => { tip.classList.remove("show"); dotEls.forEach((dt) => dt.classList.remove("act")); });
+  }
+  renderGrowth();
+
+  /* ---------- sparklines ---------- */
+  function spark(id, values, color) {
+    const el = $(id); if (!el) return;
+    const n = values.length, max = Math.max(1, ...values), bw = 120 / n;
+    el.innerHTML = values.map((v, i) =>
+      `<rect x="${i * bw + 1}" y="${34 - (v / max) * 32}" width="${bw - 2}" height="${(v / max) * 32}" rx="1.5" fill="${color}" style="animation-delay:${i * 0.04}s"/>`
+    ).join("");
+  }
+  spark("sparkJoined", months.map((m) => m.joined), "var(--gold-500)");
+  spark("sparkActive", cumulative, "var(--blue-300)");
+
+  /* ---------- fee-collection donut ---------- */
+  const paid = active.filter((s) => s.fees_paid).length;
+  const pending = active.length - paid;
+  const pct = active.length ? Math.round((paid / active.length) * 100) : 0;
+  $("legPaid").textContent = paid;
+  $("legPending").textContent = pending;
+  $("donutPct").textContent = `${pct}%`;
+  const C = 2 * Math.PI * 52;
+  const ring = $("donutVal");
+  ring.style.strokeDasharray = `${C}`;
+  ring.style.strokeDashoffset = `${C}`;
+  requestAnimationFrame(() => { ring.style.strokeDashoffset = `${C * (1 - pct / 100)}`; });
+
+  /* ---------- needs attention ---------- */
   const byStudent = new Map();
   payments.forEach((p) => {
     if (p.payment_type !== "joining" && p.payment_type !== "renewal") return;
-    const list = byStudent.get(p.student_id) || [];
-    list.push(p);
-    byStudent.set(p.student_id, list);
+    if (!byStudent.has(p.student_id)) byStudent.set(p.student_id, []);
+    byStudent.get(p.student_id).push(p);
   });
   function addMonths(iso, m) {
     const d = new Date(`${String(iso).slice(0, 10)}T00:00:00`);
@@ -39,62 +141,22 @@
   function nextDue(student) {
     const list = (byStudent.get(student.id) || []).filter((p) => p.cycle_start_date);
     if (!list.length) return student.join_date ? addMonths(student.join_date, 1) : null;
-    let latestEnd = null;
-    list.forEach((p) => {
-      const end = addMonths(p.cycle_start_date, Math.max(1, Number(p.months_covered) || 1));
-      if (!latestEnd || end > latestEnd) latestEnd = end;
-    });
-    return latestEnd;
+    let latest = null;
+    list.forEach((p) => { const end = addMonths(p.cycle_start_date, Math.max(1, Number(p.months_covered) || 1)); if (!latest || end > latest) latest = end; });
+    return latest;
   }
-
   const today = todayIso();
   const joiningPending = active.filter((s) => !s.fees_paid);
-  const renewalDue = active
-    .filter((s) => s.fees_paid)
-    .map((s) => ({ s, due: nextDue(s) }))
-    .filter((x) => x.due && x.due <= today)
-    .sort((a, b) => (a.due < b.due ? -1 : 1));
+  const renewalDue = active.filter((s) => s.fees_paid).map((s) => ({ s, due: nextDue(s) })).filter((x) => x.due && x.due <= today).map((x) => x.s);
 
-  /* ---- render alert lists ---- */
-  function rowHtml(s, right) {
-    return `<div class="alert-row">
-      <a href="player.html?id=${encodeURIComponent(s.id)}">${esc(s.name)}</a>
-      <span class="faint num" style="font-size:12px;">${right}</span>
-    </div>`;
+  const initials = (name) => String(name || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  function avatars(list) {
+    const shown = list.slice(0, 4).map((s) => `<span class="av" title="${esc(s.name)}">${esc(initials(s.name))}</span>`).join("");
+    const more = list.length > 4 ? `<span class="av more">+${list.length - 4}</span>` : "";
+    return shown + more || '<span class="faint" style="font-size:12.5px;">All clear 🎉</span>';
   }
-  $("feesDueCount").textContent = joiningPending.length;
-  $("feesDueList").innerHTML = joiningPending.length
-    ? joiningPending.map((s) => rowHtml(s, `joined ${fmtDate(s.join_date)}`)).join("")
-    : `<p class="empty-state">No joining fees pending 🎉</p>`;
-
-  $("renewalDueCount").textContent = renewalDue.length;
-  $("renewalDueList").innerHTML = renewalDue.length
-    ? renewalDue.map(({ s, due }) => rowHtml(s, `due ${fmtDate(due)}`)).join("")
-    : `<p class="empty-state">No renewals overdue 🎉</p>`;
-
-  /* ---- student movement (last 12 months) ---- */
-  const now = new Date();
-  const monthsArr = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthsArr.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }), joined: 0, left: 0 });
-  }
-  const mIndex = new Map(monthsArr.map((m, i) => [m.key, i]));
-  students.forEach((s) => {
-    const jk = String(s.join_date || "").slice(0, 7);
-    if (mIndex.has(jk)) monthsArr[mIndex.get(jk)].joined++;
-    if (s.discontinued && s.discontinued_at) {
-      const lk = String(s.discontinued_at).slice(0, 7);
-      if (mIndex.has(lk)) monthsArr[mIndex.get(lk)].left++;
-    }
-  });
-  const maxV = Math.max(1, ...monthsArr.map((m) => Math.max(m.joined, m.left)));
-  $("movementChart").innerHTML = monthsArr.map((m) => `
-    <div class="mv-col">
-      <div class="mv-bars">
-        <div class="mv-bar joined" style="height:${Math.round((m.joined / maxV) * 100)}%" title="${m.joined} joined"></div>
-        <div class="mv-bar left" style="height:${Math.round((m.left / maxV) * 100)}%" title="${m.left} left"></div>
-      </div>
-      <span class="mv-label">${m.label}</span>
-    </div>`).join("");
+  $("joiningCount").textContent = joiningPending.length;
+  $("renewalCount").textContent = renewalDue.length;
+  $("joiningAvatars").innerHTML = avatars(joiningPending);
+  $("renewalAvatars").innerHTML = avatars(renewalDue);
 })();

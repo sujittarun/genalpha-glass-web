@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
-  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <link rel="stylesheet" href="assets/css/glass.css?v=6" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
     .profile-hero { display: flex; gap: var(--gap-4); align-items: center; padding: var(--gap-4); flex-wrap: wrap; }
     .avatar {
@@ -68,9 +68,9 @@
     </section>
 
     <section class="ga-grid cols-4 stat-row reveal d1">
-      <article class="glass stat-card"><p class="kicker">Days present</p><span class="stat-value num" id="sDays">—</span><p class="stat-copy" id="sDaysLast">—</p></article>
-      <article class="glass stat-card"><p class="kicker">Training duration</p><span class="stat-value num" id="sMonths">—</span><p class="stat-copy">Months in the academy</p></article>
-      <article class="glass stat-card"><p class="kicker">Total paid</p><span class="stat-value num" id="sPaid">—</span><p class="stat-copy" id="sPaidCount">—</p></article>
+      <article class="glass stat-card"><p class="kicker">Days present</p><span class="stat-value num" id="sDays" data-countup>—</span><p class="stat-copy" id="sDaysLast">—</p></article>
+      <article class="glass stat-card"><p class="kicker">Training duration</p><span class="stat-value num" id="sMonths" data-countup>—</span><p class="stat-copy">Months in the academy</p></article>
+      <article class="glass stat-card"><p class="kicker">Total paid</p><span class="stat-value num" id="sPaid" data-countup>—</span><p class="stat-copy" id="sPaidCount">—</p></article>
       <article class="glass stat-card"><p class="kicker">Next fee due</p><span class="stat-value num" id="sDue" style="font-size:24px;">—</span><p class="stat-copy" id="sDueState">—</p></article>
     </section>
 
@@ -97,7 +97,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
-  <script src="assets/js/core.js?v=4"></script>
-  <script src="assets/js/pages/player.js?v=4"></script>
+  <script src="assets/js/core.js?v=6"></script>
+  <script src="assets/js/pages/player.js?v=6"></script>
 </body>
 </html>

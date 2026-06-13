@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/glass.css?v=4" />
-  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light";</script>
+  <link rel="stylesheet" href="assets/css/glass.css?v=6" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
     .range-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .range-bar input[type="date"] { width: auto; padding: 9px 13px; font-size: 13px; }
@@ -49,12 +49,12 @@
     </section>
 
     <section class="ga-grid cols-4 stat-row reveal d1">
-      <article class="glass glass-hover stat-card"><p class="kicker">Revenue</p><span class="stat-value num" id="mRevenue">—</span>
+      <article class="glass glass-hover stat-card"><p class="kicker">Revenue</p><span class="stat-value num" id="mRevenue" data-countup>—</span>
         <div class="sub-metrics"><span>Joining <strong class="num" id="mJoining">—</strong></span><span>Renewals <strong class="num" id="mRenewal">—</strong></span></div>
       </article>
-      <article class="glass glass-hover stat-card"><p class="kicker">Expenses</p><span class="stat-value num" id="mExpenses">—</span><p class="stat-copy" id="mExpenseCount">—</p></article>
-      <article class="glass glass-hover stat-card"><p class="kicker">Net</p><span class="stat-value num" id="mNet">—</span><p class="stat-copy">Revenue minus expenses</p></article>
-      <article class="glass glass-hover stat-card"><p class="kicker">Payments</p><span class="stat-value num" id="mPayments">—</span><p class="stat-copy">Payments received in range</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Expenses</p><span class="stat-value num" id="mExpenses" data-countup>—</span><p class="stat-copy" id="mExpenseCount">—</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Net</p><span class="stat-value num" id="mNet" data-countup>—</span><p class="stat-copy">Revenue minus expenses</p></article>
+      <article class="glass glass-hover stat-card"><p class="kicker">Payments</p><span class="stat-value num" id="mPayments" data-countup>—</span><p class="stat-copy">Payments received in range</p></article>
     </section>
 
     <section class="glass glass-card reveal d2">
@@ -102,7 +102,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
-  <script src="assets/js/core.js?v=4"></script>
+  <script src="assets/js/core.js?v=6"></script>
   <script src="assets/js/pages/finance.js?v=1"></script>
 </body>
 </html>
