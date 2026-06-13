@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/glass.css?v=6" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=7" />
   <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
 </head>
 <body>
@@ -23,7 +23,7 @@
         <stop offset="0" stop-color="rgba(245,185,66,0.42)" /><stop offset="1" stop-color="rgba(245,185,66,0)" />
       </linearGradient>
       <linearGradient id="gaDonutGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#4ade80" /><stop offset="1" stop-color="#15a34a" />
+        <stop offset="0" stop-color="#ffcf6a" /><stop offset="1" stop-color="#e8a31e" />
       </linearGradient>
     </defs>
   </svg>
@@ -52,7 +52,7 @@
       <article class="glass glass-hover kpi">
         <p class="kicker">Pending review</p>
         <span class="stat-value num" id="statPending" data-countup>—</span>
-        <p class="stat-copy"><a href="review.html" class="gold">Open review queue →</a></p>
+        <p class="stat-copy"><a href="roster.html" class="gold">Review in Players →</a></p>
       </article>
     </section>
 
@@ -79,7 +79,7 @@
             <div class="center"><div class="pct num" id="donutPct">—</div><div class="lbl">Collected</div></div>
           </div>
           <div class="donut-legend">
-            <span class="lg"><span class="sw" style="background:linear-gradient(135deg,#4ade80,#15a34a)"></span>Paid <strong class="num" id="legPaid">—</strong></span>
+            <span class="lg"><span class="sw" style="background:linear-gradient(135deg,#ffcf6a,#e8a31e)"></span>Paid <strong class="num" id="legPaid">—</strong></span>
             <span class="lg"><span class="sw" style="background:var(--tile-border)"></span>Pending <strong class="num" id="legPending">—</strong></span>
           </div>
         </div>
@@ -109,7 +109,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
-  <script src="assets/js/core.js?v=6"></script>
+  <script src="assets/js/core.js?v=7"></script>
   <script src="assets/js/pages/dashboard.js?v=2"></script>
 </body>
 </html>

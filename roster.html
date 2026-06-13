@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/glass.css?v=6" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=7" />
   <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
     .roster-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
@@ -60,11 +60,37 @@
       .edit-grid { grid-template-columns: 1fr; }
       .pr-row { grid-template-columns: 1fr; }
     }
+
+    /* pending admissions panel (review moved here from its own tab) */
+    #pendingAdmissions { border-color: rgba(220,160,40,.45); }
+    .pa-list { display: flex; flex-direction: column; gap: 10px; }
+    .pa-item {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 12px 15px; border-radius: var(--r-lg);
+      background: var(--tile-bg); border: 1px solid var(--tile-border);
+      transition: border-color .25s ease, transform .35s var(--ease-spring), background .25s ease;
+    }
+    .pa-item:hover { border-color: var(--input-border-hover); transform: translateY(-2px); }
+    .pa-name { font-weight: 700; font-size: 14.5px; color: var(--ink-hi); }
+    .pa-meta { font-size: 12px; color: var(--ink-low); margin-top: 2px; }
+    .pa-actions { display: flex; gap: 8px; }
   </style>
 </head>
 <body>
   <main class="ga-page">
-    <section class="glass glass-card reveal">
+    <section class="glass glass-card reveal" id="pendingAdmissions" hidden>
+      <div class="card-head">
+        <div>
+          <p class="kicker">New requests</p>
+          <h2>Pending admissions</h2>
+          <p class="sub">Approve to add the player to the roster, or reject to remove the request.</p>
+        </div>
+        <span class="pill gold" id="pendingPill">0 pending</span>
+      </div>
+      <div class="pa-list" id="pendingList"></div>
+    </section>
+
+    <section class="glass glass-card reveal d1">
       <div class="card-head">
         <div>
           <p class="kicker">Gen Alpha records</p>
@@ -169,7 +195,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
-  <script src="assets/js/core.js?v=6"></script>
-  <script src="assets/js/pages/roster.js?v=6"></script>
+  <script src="assets/js/core.js?v=7"></script>
+  <script src="assets/js/pages/roster.js?v=7"></script>
 </body>
 </html>

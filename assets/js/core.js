@@ -132,12 +132,13 @@
   /* Navigation IA:
      Manager: Dashboard · Players · Attendance · Finance · Admissions(badge)
      Public:  Admission · Attendance · Pay Fees                    */
+  // Admissions review now lives on the Players page (pending panel above the
+  // table), so it is no longer a top-level tab.
   const MANAGER_TABS = [
     { key: "dashboard", label: "Dashboard", href: "dashboard.html", icon: I.dashboard },
     { key: "roster", label: "Players", href: "roster.html", icon: I.players },
     { key: "attendance", label: "Attendance", href: "attendance.html", icon: I.attendance },
     { key: "finance", label: "Finance", href: "finance.html", icon: I.finance },
-    { key: "review", label: "Admissions", href: "review.html", icon: I.review, badge: true },
   ];
   const PUBLIC_TABS = [
     { key: "admission", label: "Admission", href: "index.html", icon: I.admission },
@@ -446,7 +447,20 @@
       '<span class="cb cb1"></span><span class="cb cb2"></span><span class="cb cb3"></span>' +
       '<svg class="cb-arc" viewBox="0 0 1440 900" preserveAspectRatio="none">' +
       '<path d="M -40 760 Q 560 120 1480 520" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 14" stroke-linecap="round"/>' +
-      '</svg>';
+      '</svg>' +
+      // wickets (stumps + bails) bottom-right
+      '<svg class="ga-stumps" viewBox="0 0 90 130" fill="none" stroke="currentColor">' +
+      '<g stroke-width="6" stroke-linecap="round"><line x1="20" y1="34" x2="20" y2="120"/>' +
+      '<line x1="45" y1="34" x2="45" y2="120"/><line x1="70" y1="34" x2="70" y2="120"/></g>' +
+      '<g class="bails" stroke-width="5" stroke-linecap="round"><line x1="16" y1="32" x2="49" y2="32"/>' +
+      '<line x1="41" y1="32" x2="74" y2="32"/></g></svg>' +
+      // batsman silhouette playing a drive, bottom-left
+      '<svg class="ga-batsman" viewBox="0 0 160 200" fill="currentColor">' +
+      '<circle cx="78" cy="34" r="13"/>' +
+      '<path d="M68 48 Q62 92 58 132 L74 132 Q80 96 88 60 Z"/>' +
+      '<path d="M58 130 L46 188 56 190 70 134 Z"/><path d="M76 130 L86 188 96 186 84 132 Z"/>' +
+      '<g class="bat-arm"><path d="M74 58 q26 6 40 24" stroke="currentColor" stroke-width="9" stroke-linecap="round" fill="none"/>' +
+      '<rect class="bat" x="108" y="74" width="11" height="68" rx="5" transform="rotate(34 113 108)"/></g></svg>';
     bg.appendChild(wrap);
   }
 

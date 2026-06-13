@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/glass.css?v=6" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=7" />
   <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
     .range-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
@@ -30,6 +30,16 @@
   </style>
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gaRevGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#ffcf6a" /><stop offset="1" stop-color="#e8a31e" />
+      </linearGradient>
+      <linearGradient id="gaRevArea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="rgba(245,185,66,0.40)" /><stop offset="1" stop-color="rgba(245,185,66,0)" />
+      </linearGradient>
+    </defs>
+  </svg>
   <main class="ga-page">
     <section class="glass glass-card tight reveal">
       <div class="range-bar">
@@ -60,9 +70,9 @@
     <section class="glass glass-card reveal d2">
       <div class="card-head">
         <div><p class="kicker">Trends</p><h2>Revenue vs expenses</h2></div>
-        <div class="flex"><span class="pill green">● Revenue</span><span class="pill red">● Expenses</span></div>
+        <div class="flex"><span class="pill gold">● Revenue</span><span class="pill red">● Expenses</span></div>
       </div>
-      <div class="fin-chart" id="finChart"></div>
+      <div class="chart-host" id="finChart"><div class="chart-tip" id="finTip"></div></div>
     </section>
 
     <section class="glass glass-card reveal d3">
@@ -102,7 +112,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
-  <script src="assets/js/core.js?v=6"></script>
-  <script src="assets/js/pages/finance.js?v=1"></script>
+  <script src="assets/js/core.js?v=7"></script>
+  <script src="assets/js/pages/finance.js?v=2"></script>
 </body>
 </html>

@@ -371,11 +371,59 @@
     await load();
   });
 
+  /* ---- pending admissions (review queue moved here from its own tab) ---- */
+  async function loadAdmissions() {
+    const sec = $("pendingAdmissions");
+    const { data, error } = await client
+      .from("admissions").select("*").eq("review_status", "pending").order("created_at", { ascending: true });
+    if (error) { sec.hidden = true; return; }
+    const rows = data || [];
+    $("pendingPill").textContent = `${rows.length} pending`;
+    sec.hidden = rows.length === 0;
+    $("pendingList").innerHTML = rows.map((a) => `
+      <article class="pa-item">
+        <div class="pa-main">
+          <div class="pa-name">${esc(a.applicant_name)} <span class="faint" style="font-weight:500;font-size:12px;">Reg ${esc(a.registration_no || a.id)}</span></div>
+          <div class="pa-meta">${esc(a.age ?? "—")} yrs · ${esc(a.time_slot || "—")} · ${esc(a.fee_plan || "monthly")} · ${fmtMoney(a.total_fee_amount || 0)}${a.amount_paid > 0 ? ` · claims paid ${fmtMoney(a.amount_paid)}` : ""}${a.father_guardian_name ? ` · ${esc(a.father_guardian_name)}` : ""}</div>
+        </div>
+        <div class="pa-actions">
+          <button class="btn btn-primary btn-sm" data-approve="${a.id}">Approve</button>
+          <button class="btn btn-ghost btn-sm" data-reject="${a.id}">Reject</button>
+        </div>
+      </article>`).join("");
+  }
+  document.addEventListener("click", async (e) => {
+    const approve = e.target.closest("[data-approve]");
+    const reject = e.target.closest("[data-reject]");
+    if (!approve && !reject) return;
+    const btn = approve || reject;
+    const id = btn.dataset.approve || btn.dataset.reject;
+    if (reject && !confirm("Reject and remove this admission request?")) return;
+    btn.disabled = true;
+    btn.textContent = approve ? "Approving…" : "Rejecting…";
+    let error;
+    if (approve) {
+      ({ error } = await client.rpc("approve_admission", { p_admission_id: id, p_reviewed_by: email, p_review_notes: "" }));
+    } else {
+      ({ error } = await client.from("admissions").delete().eq("id", id));
+    }
+    if (error) {
+      toast(error.message || "Unable to update admission.");
+      btn.disabled = false;
+      btn.textContent = approve ? "Approve" : "Reject";
+      return;
+    }
+    toast(approve ? "Admission approved — player added to roster ✔" : "Admission rejected.");
+    await Promise.all([loadAdmissions(), load()]);
+  });
+
   /* ---- realtime ---- */
   client.channel("roster-live")
     .on("postgres_changes", { event: "*", schema: "public", table: "students" }, () => load())
     .on("postgres_changes", { event: "*", schema: "public", table: "student_payments" }, () => load())
+    .on("postgres_changes", { event: "*", schema: "public", table: "admissions" }, () => loadAdmissions())
     .subscribe();
 
   await load();
+  await loadAdmissions();
 })();

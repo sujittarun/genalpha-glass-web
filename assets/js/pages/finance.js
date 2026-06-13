@@ -9,6 +9,7 @@
   let payments = [];
   let expenses = [];
   let rangeMode = "this-month";
+  let finChartState = null;
 
   cfg.expenseTypes.forEach((t) => $("xType").insertAdjacentHTML("beforeend", `<option>${t}</option>`));
   cfg.expensePaidBy.forEach((p) => $("xPaidBy").insertAdjacentHTML("beforeend", `<option>${p}</option>`));
@@ -41,6 +42,64 @@
     [...$("rangeChips").children].forEach((c) => c.classList.remove("active"));
     render();
   }));
+
+  /* ---- revenue vs expenses chart (animated dual-series + tooltip) ---- */
+  function drawFinChart(months) {
+    const host = $("finChart");
+    const W = 620, H = 240, pad = 14, padB = 26, n = months.length;
+    const innerW = W - pad * 2, innerH = H - 14 - padB;
+    const max = Math.max(1, ...months.map((m) => Math.max(m.rev, m.exp)));
+    const X = (i) => pad + (n === 1 ? innerW / 2 : (i * innerW) / (n - 1));
+    const Y = (v) => 14 + innerH - (v / max) * innerH;
+    const smooth = (vals) => {
+      let d = `M ${X(0)} ${Y(vals[0])}`;
+      for (let i = 1; i < n; i++) {
+        const xc = (X(i - 1) + X(i)) / 2, yc = (Y(vals[i - 1]) + Y(vals[i])) / 2;
+        d += ` Q ${X(i - 1)} ${Y(vals[i - 1])} ${xc} ${yc}`;
+      }
+      return d + ` T ${X(n - 1)} ${Y(vals[n - 1])}`;
+    };
+    const revLine = smooth(months.map((m) => m.rev)), expLine = smooth(months.map((m) => m.exp));
+    const revArea = `${revLine} L ${X(n - 1)} ${14 + innerH} L ${X(0)} ${14 + innerH} Z`;
+    const grid = [0.5, 1].map((g) => `<line x1="${pad}" y1="${14 + innerH * g}" x2="${W - pad}" y2="${14 + innerH * g}"/>`).join("");
+    const labels = months.map((m, i) => (i % 2 === 0 ? `<text class="chart-xlabel" x="${X(i)}" y="${H - 6}" text-anchor="middle">${m.label}</text>` : "")).join("");
+    const dots = months.map((m, i) => `<circle class="fin-dot rev" data-i="${i}" cx="${X(i)}" cy="${Y(m.rev)}" r="4"/><circle class="fin-dot exp" data-i="${i}" cx="${X(i)}" cy="${Y(m.exp)}" r="4"/>`).join("");
+
+    host.querySelector("svg")?.remove();
+    host.insertAdjacentHTML("afterbegin",
+      `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <g class="chart-grid">${grid}</g>
+        <line class="area-guide" id="finGuide" x1="0" y1="14" x2="0" y2="${14 + innerH}"/>
+        <path class="fin-rev-fill" d="${revArea}" fill="url(#gaRevArea)"/>
+        <path class="fin-rev-line" d="${revLine}"/>
+        <path class="fin-exp-line" d="${expLine}"/>
+        ${dots}${labels}
+      </svg>`);
+    const fill = host.querySelector(".fin-rev-fill");
+    host.querySelectorAll(".fin-rev-line, .fin-exp-line").forEach((p) => {
+      const L = p.getTotalLength();
+      p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+      requestAnimationFrame(() => { p.style.transition = "stroke-dashoffset 1.4s ease"; p.style.strokeDashoffset = "0"; });
+    });
+    requestAnimationFrame(() => fill.classList.add("in"));
+    finChartState = { months, X, Y, W, H, n };
+  }
+  $("finChart").addEventListener("pointermove", (e) => {
+    const s = finChartState; if (!s) return;
+    const host = $("finChart"), tip = $("finTip"), r = host.getBoundingClientRect();
+    const frac = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const i = Math.round(frac * (s.n - 1)), m = s.months[i];
+    host.querySelectorAll(".fin-dot").forEach((d) => d.classList.toggle("act", Number(d.dataset.i) === i));
+    const guide = host.querySelector("#finGuide"); if (guide) { guide.setAttribute("x1", s.X(i)); guide.setAttribute("x2", s.X(i)); }
+    tip.style.left = `${(s.X(i) / s.W) * r.width}px`;
+    tip.style.top = `${(Math.min(s.Y(m.rev), s.Y(m.exp)) / s.H) * r.height}px`;
+    tip.innerHTML = `<div style="margin-bottom:2px;">${m.label}</div><div><span class="tv gold">${fmtMoney(m.rev)}</span> revenue</div><div><span class="tv" style="color:var(--tx-red)">${fmtMoney(m.exp)}</span> expenses</div>`;
+    tip.classList.add("show");
+  });
+  $("finChart").addEventListener("pointerleave", () => {
+    $("finTip").classList.remove("show");
+    $("finChart").querySelectorAll(".fin-dot").forEach((d) => d.classList.remove("act"));
+  });
 
   /* ---- load ---- */
   async function load() {
@@ -86,15 +145,7 @@
     const idx = new Map(months.map((m, i) => [m.key, i]));
     payments.forEach((p) => { const k = payDate(p).slice(0, 7); if (idx.has(k)) months[idx.get(k)].rev += Number(p.amount) || 0; });
     expenses.forEach((x) => { const k = expDate(x).slice(0, 7); if (idx.has(k)) months[idx.get(k)].exp += Number(x.amount) || 0; });
-    const maxV = Math.max(1, ...months.map((m) => Math.max(m.rev, m.exp)));
-    $("finChart").innerHTML = months.map((m) => `
-      <div class="fc-col" title="${m.label}: revenue ${fmtMoney(m.rev)}, expenses ${fmtMoney(m.exp)}">
-        <div class="fc-bars">
-          <div class="fc-bar rev" style="height:${Math.round((m.rev / maxV) * 100)}%"></div>
-          <div class="fc-bar exp" style="height:${Math.round((m.exp / maxV) * 100)}%"></div>
-        </div>
-        <span class="fc-label">${m.label}</span>
-      </div>`).join("");
+    drawFinChart(months);
 
     /* expenses list */
     $("expEmpty").classList.toggle("hide", rExps.length > 0);
