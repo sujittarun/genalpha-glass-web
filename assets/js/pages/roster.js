@@ -9,9 +9,12 @@
   const $ = (id) => document.getElementById(id);
   let students = [];
   let payments = [];
+  let attendance = [];
   let slotFilter = "";
+  let riskFilter = false;
   let editingId = null;
   let payingStudent = null;
+  const lastSeenMap = new Map();
 
   /* ---- selects ---- */
   cfg.timeSlots.forEach((s) => {
@@ -50,6 +53,78 @@
   }
   const returningIds = () => new Set(payments.filter((p) => p.payment_type === "renewal").map((p) => p.student_id));
 
+  /* ---- attendance / retention helpers ---- */
+  function buildAttendance() {
+    lastSeenMap.clear();
+    attendance.forEach((a) => {
+      const d = String(a.attendance_date || "").slice(0, 10);
+      if (!d) return;
+      const cur = lastSeenMap.get(a.student_id);
+      if (!cur || d > cur) lastSeenMap.set(a.student_id, d);
+    });
+  }
+  function daysSince(iso) {
+    if (!iso) return null;
+    const d = new Date(`${String(iso).slice(0, 10)}T00:00:00`);
+    const t = new Date(`${todayIso()}T00:00:00`);
+    return Math.round((t - d) / 86400000);
+  }
+  // at-risk: active, joined > 2 weeks ago, and no attendance in the last 2 weeks
+  function isAtRisk(s) {
+    if (s.discontinued) return false;
+    const jd = daysSince(s.join_date);
+    if (jd != null && jd <= 14) return false;
+    const since = daysSince(lastSeenMap.get(s.id));
+    return since == null || since > 14;
+  }
+  function attCell(s) {
+    const since = daysSince(lastSeenMap.get(s.id));
+    if (since == null) return `<span class="pill att-pill">—</span>`;
+    const cls = since <= 7 ? "green" : since <= 14 ? "gold" : "red";
+    return `<span class="pill ${cls} att-pill">${since === 0 ? "today" : since + "d"}</span>`;
+  }
+  function attMeta(s) {
+    const since = daysSince(lastSeenMap.get(s.id));
+    if (since == null) return `<span class="pill">Not marked</span>`;
+    const cls = since <= 7 ? "green" : since <= 14 ? "gold" : "red";
+    return `<span class="pill ${cls}">Seen ${since === 0 ? "today" : since + "d ago"}</span>`;
+  }
+
+  /* ---- roster pulse + birthdays ---- */
+  function renderPulse() {
+    const active = students.filter((s) => !s.discontinued);
+    const ym = todayIso().slice(0, 7);
+    const newThis = students.filter((s) => String(s.join_date || "").slice(0, 7) === ym).length;
+    const churn = students.filter((s) => s.discontinued && String(s.discontinued_at || "").slice(0, 7) === ym).length;
+    const needs = active.filter((s) => feeState(s).label !== "Paid").length;
+    const risk = active.filter(isAtRisk).length;
+    $("kActive").textContent = active.length;
+    $("kActiveSub").textContent = churn > 0 ? `${churn} left this month` : "Currently training";
+    $("kNew").textContent = newThis;
+    $("kNeeds").textContent = needs;
+    $("kRisk").textContent = risk;
+  }
+  function renderBirthdays() {
+    const banner = $("bdayBanner");
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const list = [];
+    students.filter((s) => !s.discontinued && s.date_of_birth).forEach((s) => {
+      const d = new Date(`${String(s.date_of_birth).slice(0, 10)}T00:00:00`);
+      if (isNaN(d)) return;
+      let next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+      if (next < today) next = new Date(today.getFullYear() + 1, d.getMonth(), d.getDate());
+      const diff = Math.round((next - today) / 86400000);
+      if (diff >= 0 && diff <= 14) list.push({ name: s.name, diff });
+    });
+    list.sort((a, b) => a.diff - b.diff);
+    banner.hidden = !list.length;
+    if (list.length) banner.innerHTML = `<span class="bt">🎂 Birthdays</span>` +
+      list.slice(0, 6).map((b) => `<span class="bd">${esc(b.name)} · ${b.diff === 0 ? "today" : b.diff === 1 ? "tomorrow" : "in " + b.diff + "d"}</span>`).join("");
+  }
+  function updatePulseActive() {
+    document.querySelector('#rosterPulse [data-jump="atrisk"]')?.classList.toggle("on", riskFilter);
+  }
+
   /* ---- load (with skeleton on first paint) ---- */
   let loadedOnce = false;
   function renderSkeleton() {
@@ -66,15 +141,20 @@
   }
   async function load() {
     if (!loadedOnce) renderSkeleton();
-    const [sRes, pRes] = await Promise.all([
+    const [sRes, pRes, aRes] = await Promise.all([
       client.from("students").select("*").order("name", { ascending: true }),
       client.from("student_payments").select("student_id, payment_type, cycle_start_date, months_covered"),
+      client.from("attendance").select("student_id, attendance_date"),
     ]);
     if (sRes.error) return toast(sRes.error.message);
     loadedOnce = true;
     students = sRes.data || [];
     payments = pRes.data || [];
+    attendance = aRes.data || [];
+    buildAttendance();
     renderSlots();
+    renderPulse();
+    renderBirthdays();
     render();
   }
 
@@ -106,6 +186,7 @@
     const retIds = returningIds();
     return students.filter((s) => {
       if (q && !String(s.name || "").toLowerCase().includes(q)) return false;
+      if (riskFilter && !isAtRisk(s)) return false;
       if (status === "active" && s.discontinued) return false;
       if (status === "discontinued" && !s.discontinued) return false;
       if (slotFilter && s.time_slot !== slotFilter) return false;
@@ -122,9 +203,27 @@
   }
   let shownCount = 30;
   ["searchInput", "statusFilter", "feeFilter", "typeFilter", "jerseyFilter"].forEach((id) =>
-    $(id).addEventListener("input", () => { shownCount = 30; render(); })
+    $(id).addEventListener("input", () => { riskFilter = false; updatePulseActive(); shownCount = 30; render(); })
   );
   $("showMoreBtn").addEventListener("click", () => { shownCount += 30; render(); });
+
+  /* ---- pulse KPI quick-filters ---- */
+  $("rosterPulse").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-jump]"); if (!card) return;
+    const j = card.dataset.jump;
+    if (j === "atrisk") {
+      riskFilter = !riskFilter;
+      if (riskFilter) { $("statusFilter").value = "active"; $("feeFilter").value = "all"; }
+    } else {
+      riskFilter = false;
+      $("statusFilter").value = "active"; $("searchInput").value = ""; slotFilter = "";
+      $("feeFilter").value = j === "needs" ? "not-paid" : "all";
+      renderSlots();
+    }
+    updatePulseActive();
+    shownCount = 30; render();
+    document.getElementById("tableWrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
 
   /* ---- render (paged) ---- */
   function render() {
@@ -140,14 +239,14 @@
       const st = feeState(s);
       const due = s.fees_paid && !s.discontinued ? nextDue(s) : null;
       return `<tr>
-        <td><span class="t-name" data-open="${s.id}">${esc(s.name)}</span></td>
+        <td><span class="t-name" data-open="${s.id}">${esc(s.name)}</span>${isAtRisk(s) ? '<span class="t-risk">AT&nbsp;RISK</span>' : ""}</td>
         <td class="num">${esc(s.age ?? "—")}</td>
         <td>${esc(s.time_slot || "—")}</td>
         <td class="num">${fmtDate(s.join_date)}</td>
         <td><span class="pill ${st.cls}">${st.label}</span></td>
         <td class="num">${due ? fmtDate(due) : "—"}</td>
+        <td>${attCell(s)}</td>
         <td class="num">${esc(s.jersey_size || "—")}${s.jersey_pairs ? ` ×${s.jersey_pairs}` : ""}</td>
-        <td class="num">${esc(s.parent_contact_no || "—")}</td>
         <td><div class="flex" style="gap:6px;justify-content:flex-end;">
           <button class="btn btn-glass btn-sm" data-edit="${s.id}">Edit</button>
           <button class="btn btn-glass btn-sm" data-pay="${s.id}">₹</button>
@@ -159,13 +258,13 @@
       const st = feeState(s);
       return `<article class="glass row-card">
         <div class="rc-top">
-          <span class="rc-name t-name" data-open="${s.id}">${esc(s.name)}</span>
+          <span class="rc-name t-name" data-open="${s.id}">${esc(s.name)}${isAtRisk(s) ? '<span class="t-risk">AT&nbsp;RISK</span>' : ""}</span>
           <span class="pill ${st.cls}">${st.label}</span>
         </div>
         <div class="rc-meta">
           <span class="pill">${esc(s.time_slot || "—")}</span>
           <span class="pill">Age ${esc(s.age ?? "—")}</span>
-          <span class="pill">Joined ${fmtDate(s.join_date)}</span>
+          ${attMeta(s)}
           ${s.jersey_size ? `<span class="pill">Jersey ${esc(s.jersey_size)}</span>` : ""}
         </div>
         <div class="rc-actions">
@@ -421,6 +520,7 @@
   client.channel("roster-live")
     .on("postgres_changes", { event: "*", schema: "public", table: "students" }, () => load())
     .on("postgres_changes", { event: "*", schema: "public", table: "student_payments" }, () => load())
+    .on("postgres_changes", { event: "*", schema: "public", table: "attendance" }, () => load())
     .on("postgres_changes", { event: "*", schema: "public", table: "admissions" }, () => loadAdmissions())
     .subscribe();
 

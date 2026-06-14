@@ -74,11 +74,49 @@
     .pa-name { font-weight: 700; font-size: 14.5px; color: var(--ink-hi); }
     .pa-meta { font-size: 12px; color: var(--ink-low); margin-top: 2px; }
     .pa-actions { display: flex; gap: 8px; }
+
+    /* roster pulse KPIs */
+    #rosterPulse .stat-card[data-jump] { cursor: pointer; }
+    #rosterPulse .stat-card.on { border-color: rgba(245,185,66,.6); box-shadow: 0 0 0 2px rgba(245,185,66,.22), var(--glass-shadow); }
+    .kpi-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .kpi-act { font-size:10.5px; font-weight:700; color:var(--tx-gold); }
+    /* birthdays */
+    .bday-banner { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:11px 15px; border-radius:var(--r-lg); margin-bottom:var(--gap-3);
+      background:linear-gradient(120deg, rgba(245,185,66,.16), rgba(110,168,255,.12)); border:1px solid var(--tile-border); font-size:13px; }
+    .bday-banner .bt { font-weight:700; color:var(--ink-hi); }
+    .bday-banner .bd { padding:3px 11px; border-radius:999px; background:var(--chip-bg); border:1px solid var(--chip-border); font-weight:650; color:var(--ink-mid); }
+    /* attendance + at-risk */
+    .att-pill { font-variant-numeric:tabular-nums; }
+    .t-risk { display:inline-block; margin-left:6px; font-size:9.5px; font-weight:800; letter-spacing:.04em; color:var(--tx-red); background:rgba(255,107,107,.13); border:1px solid rgba(220,80,86,.3); padding:1px 6px; border-radius:999px; vertical-align:middle; }
   </style>
 </head>
 <body>
   <main class="ga-page">
-    <section class="glass glass-card reveal" id="pendingAdmissions" hidden>
+    <!-- Roster pulse -->
+    <section class="ga-grid cols-4 stat-row reveal" id="rosterPulse">
+      <article class="glass glass-hover stat-card" data-jump="active">
+        <p class="kicker">Active players</p>
+        <span class="stat-value num" id="kActive" data-countup>—</span>
+        <p class="stat-copy" id="kActiveSub">Currently training</p>
+      </article>
+      <article class="glass glass-hover stat-card">
+        <p class="kicker">New this month</p>
+        <span class="stat-value num" id="kNew" data-countup>—</span>
+        <p class="stat-copy">Joined this month</p>
+      </article>
+      <article class="glass glass-hover stat-card" data-jump="needs">
+        <div class="kpi-top"><p class="kicker">Needs payment</p><span class="kpi-act">tap →</span></div>
+        <span class="stat-value num" id="kNeeds" data-countup>—</span>
+        <p class="stat-copy">Joining + renewals due</p>
+      </article>
+      <article class="glass glass-hover stat-card" data-jump="atrisk">
+        <div class="kpi-top"><p class="kicker">At-risk</p><span class="kpi-act">tap →</span></div>
+        <span class="stat-value num" id="kRisk" data-countup>—</span>
+        <p class="stat-copy">No attendance 2+ weeks</p>
+      </article>
+    </section>
+
+    <section class="glass glass-card reveal d1" id="pendingAdmissions" hidden>
       <div class="card-head">
         <div>
           <p class="kicker">New requests</p>
@@ -90,7 +128,7 @@
       <div class="pa-list" id="pendingList"></div>
     </section>
 
-    <section class="glass glass-card reveal d1">
+    <section class="glass glass-card reveal d2">
       <div class="card-head">
         <div>
           <p class="kicker">Gen Alpha records</p>
@@ -99,6 +137,8 @@
         </div>
         <button class="btn btn-primary" id="addPlayerBtn">+ Add player</button>
       </div>
+
+      <div class="bday-banner" id="bdayBanner" hidden></div>
 
       <div class="roster-toolbar">
         <input type="search" class="search" id="searchInput" placeholder="Search student by name…" />
@@ -114,7 +154,7 @@
       <div class="table-wrap mt-3" id="tableWrap">
         <table class="ga-table">
           <thead><tr>
-            <th>Player</th><th>Age</th><th>Slot</th><th>Joined</th><th>Fee status</th><th>Next due</th><th>Jersey</th><th>Contact</th><th></th>
+            <th>Player</th><th>Age</th><th>Slot</th><th>Joined</th><th>Fee status</th><th>Next due</th><th>Last seen</th><th>Jersey</th><th></th>
           </tr></thead>
           <tbody id="tableBody"></tbody>
         </table>
@@ -196,6 +236,6 @@
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=8"></script>
-  <script src="assets/js/pages/roster.js?v=8"></script>
+  <script src="assets/js/pages/roster.js?v=9"></script>
 </body>
 </html>
