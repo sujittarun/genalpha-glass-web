@@ -12,38 +12,81 @@
   <link rel="stylesheet" href="assets/css/glass.css?v=8" />
   <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
+    /* series colours */
+    :root{ --c-join:#f5b942; --c-renew:#6ea8ff; --c-jersey:#2dd4bf; --c-exp:#ff6b6b; }
     .range-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .range-bar input[type="date"] { width: auto; padding: 9px 13px; font-size: 13px; }
-    .fin-chart { display: flex; align-items: flex-end; gap: 12px; height: 210px; padding: 10px 4px 0; overflow-x: auto; }
-    .fc-col { flex: 1; min-width: 56px; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; cursor: pointer; }
-    .fc-bars { display: flex; gap: 5px; align-items: flex-end; flex: 1; width: 100%; justify-content: center; }
-    .fc-bar { width: 14px; border-radius: 7px 7px 3px 3px; min-height: 3px; transition: height .6s var(--ease-spring), filter .2s ease; }
-    .fc-col:hover .fc-bar { filter: brightness(1.25); }
-    .fc-bar.rev { background: linear-gradient(180deg, var(--green-400), rgba(74,222,128,.35)); box-shadow: 0 0 16px rgba(74,222,128,.25); }
-    .fc-bar.exp { background: linear-gradient(180deg, var(--red-400), rgba(255,107,107,.3)); }
-    .fc-label { font-size: 10.5px; color: var(--ink-low); white-space: nowrap; }
+
+    /* KPI trend pill */
+    .kpi-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .trend { font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+    .trend.up{ color:var(--tx-green); background:rgba(74,222,128,.14); }
+    .trend.down{ color:var(--tx-red); background:rgba(255,107,107,.14); }
+    .trend.flat{ color:var(--ink-low); background:var(--pill-bg); }
+    .stat-card .stat-value.neg{ background:linear-gradient(135deg,#e7565c,#c23840); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+
+    /* layout */
+    .fin-grid { display:grid; grid-template-columns: 1.45fr 1fr; gap: var(--gap-3); align-items:start; }
+    @media (max-width:1099px){ .fin-grid{ grid-template-columns:1fr; } }
+
+    /* segmented bar (revenue mix / partners) */
+    .seg { display:flex; height:18px; border-radius:999px; overflow:hidden; background:var(--tile-bg); border:1px solid var(--tile-border); }
+    .seg span { display:block; width:0; transition: width .9s var(--ease-spring); }
+    .legend { display:flex; flex-direction:column; gap:9px; margin-top:14px; }
+    .legend .row { display:flex; align-items:center; gap:10px; font-size:13px; }
+    .legend .dot { width:11px; height:11px; border-radius:3px; flex:none; }
+    .legend .nm { color:var(--ink-mid); }
+    .legend .ct { color:var(--ink-faint); font-size:11.5px; }
+    .legend .amt { margin-left:auto; font-family:var(--font-display); font-weight:700; color:var(--ink-hi); }
+
+    /* expense category bars */
+    .cats { display:flex; flex-direction:column; gap:11px; }
+    .cat { display:grid; grid-template-columns: 92px 1fr auto; gap:10px; align-items:center; }
+    .cat .lbl { font-size:12px; color:var(--ink-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cat .track { display:block; height:10px; border-radius:999px; background:rgba(18,38,80,.07); overflow:hidden; }
+    :root[data-theme="dark"] .cat .track { background:rgba(255,255,255,.08); }
+    .cat .fill { display:block; height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,#ff9a6b,#e7565c); box-shadow:0 0 10px rgba(231,86,92,.3); transition:width .9s var(--ease-spring); }
+    .cat .amt { font-size:12.5px; font-weight:700; color:var(--ink-hi); font-variant-numeric:tabular-nums; }
+
+    .partners { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .partner { display:flex; flex-direction:column; gap:1px; padding:8px 13px; border-radius:var(--r-md); background:var(--tile-bg); border:1px solid var(--tile-border); }
+    .partner .pn { font-size:11px; color:var(--ink-low); }
+    .partner .pa { font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--ink-hi); }
+
+    .sub-h { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-low); margin:18px 0 10px; }
+
+    /* compact monthly chart */
+    .month-detail { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; min-height:22px; margin-bottom:10px; font-size:13px; }
+    .month-detail .mn { font-family:var(--font-display); font-weight:700; color:var(--ink-hi); }
+    .month-detail .seg-amt { color:var(--ink-mid); } .month-detail b{ color:var(--ink-hi); font-variant-numeric:tabular-nums; }
+    .month-detail .net.pos{ color:var(--tx-green); } .month-detail .net.neg{ color:var(--tx-red); }
+    .mchart { display:flex; align-items:flex-end; gap:2px; height:150px; padding-top:6px; }
+    .mcol { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:7px; height:100%; justify-content:flex-end; cursor:pointer; border-radius:8px; padding:4px 0 2px; transition:background .2s ease; }
+    .mcol:hover, .mcol.sel { background:var(--row-hover); }
+    .mbars { display:flex; gap:3px; align-items:flex-end; height:120px; }
+    .mrev { width:13px; display:flex; flex-direction:column-reverse; border-radius:5px 5px 0 0; overflow:hidden; transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; box-shadow:0 0 12px rgba(245,185,66,.18); }
+    .mrev i { display:block; }
+    .mexp { width:8px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-exp),rgba(255,107,107,.4)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; }
+    .mlbl { font-size:10px; color:var(--ink-low); }
+    .mcol.sel .mlbl { color:var(--tx-gold); font-weight:700; }
+    .chart-legend { display:flex; flex-wrap:wrap; gap:12px; }
+    .chart-legend .lg { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-mid); }
+    .chart-legend .sw { width:10px; height:10px; border-radius:3px; }
+
+    /* expenses */
+    .exp-head { display:flex; align-items:center; gap:10px; }
     .sub-metrics { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-mid); }
     .sub-metrics strong { color: var(--ink-hi); }
+    #expWrap.collapsed { max-height:0; overflow:hidden; opacity:0; }
+    #expWrap { max-height:2000px; opacity:1; transition:max-height .5s ease, opacity .4s ease; }
+    @media (max-width: 767px) { .exp-table-wrap { display:none; } }
     #expCards { display: flex; flex-direction: column; gap: 10px; }
-    @media (max-width: 767px) { .exp-table-wrap { display: none; } }
-    @media (min-width: 768px) { #expCards { display: none; } }
-    /* make the revenue line unmistakable against the warm glass backdrop */
-    #finChart .fin-rev-line { stroke-width: 3.4; }
-    #finChart .fin-exp-line { stroke-width: 2.4; }
+    @media (min-width: 768px) { #expCards { display:none; } }
   </style>
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <linearGradient id="gaRevGrad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#e8920c" /><stop offset="1" stop-color="#b45309" />
-      </linearGradient>
-      <linearGradient id="gaRevArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="rgba(232,146,12,0.45)" /><stop offset="1" stop-color="rgba(232,146,12,0)" />
-      </linearGradient>
-    </defs>
-  </svg>
   <main class="ga-page">
+    <!-- range -->
     <section class="glass glass-card tight reveal">
       <div class="range-bar">
         <div class="chip-row" id="rangeChips">
@@ -61,36 +104,78 @@
       </div>
     </section>
 
+    <!-- KPIs -->
     <section class="ga-grid cols-4 stat-row reveal d1">
-      <article class="glass glass-hover stat-card"><p class="kicker">Revenue</p><span class="stat-value num" id="mRevenue" data-countup>—</span>
-        <div class="sub-metrics"><span>Joining <strong class="num" id="mJoining">—</strong></span><span>Renewals <strong class="num" id="mRenewal">—</strong></span></div>
+      <article class="glass glass-hover stat-card">
+        <div class="kpi-top"><p class="kicker">Revenue</p><span class="trend flat" id="revTrend"></span></div>
+        <span class="stat-value num" id="mRevenue" data-countup>—</span>
+        <p class="stat-copy" id="mPaymentsCopy">—</p>
       </article>
-      <article class="glass glass-hover stat-card"><p class="kicker">Expenses</p><span class="stat-value num" id="mExpenses" data-countup>—</span><p class="stat-copy" id="mExpenseCount">—</p></article>
-      <article class="glass glass-hover stat-card"><p class="kicker">Net</p><span class="stat-value num" id="mNet" data-countup>—</span><p class="stat-copy">Revenue minus expenses</p></article>
-      <article class="glass glass-hover stat-card"><p class="kicker">Payments</p><span class="stat-value num" id="mPayments" data-countup>—</span><p class="stat-copy">Payments received in range</p></article>
+      <article class="glass glass-hover stat-card">
+        <div class="kpi-top"><p class="kicker">Expenses</p><span class="trend flat" id="expTrend"></span></div>
+        <span class="stat-value num" id="mExpenses" data-countup>—</span>
+        <p class="stat-copy" id="mExpenseCount">—</p>
+      </article>
+      <article class="glass glass-hover stat-card">
+        <div class="kpi-top"><p class="kicker">Net</p><span class="trend flat" id="marginPill"></span></div>
+        <span class="stat-value num" id="mNet" data-countup>—</span>
+        <p class="stat-copy">Revenue minus expenses</p>
+      </article>
+      <article class="glass glass-hover stat-card">
+        <div class="kpi-top"><p class="kicker">Outstanding</p></div>
+        <span class="stat-value num" id="mOutstanding" data-countup>—</span>
+        <p class="stat-copy" id="mOutstandingCopy">Uncollected fees</p>
+      </article>
     </section>
 
-    <section class="glass glass-card reveal d2">
-      <div class="card-head">
-        <div><p class="kicker">Trends</p><h2>Revenue vs expenses</h2></div>
-        <div class="flex"><span class="pill gold">● Revenue</span><span class="pill red">● Expenses</span></div>
-      </div>
-      <div class="chart-host" id="finChart"><div class="chart-tip" id="finTip"></div></div>
+    <!-- monthly chart + breakdown -->
+    <section class="fin-grid reveal d2">
+      <article class="glass glass-card">
+        <div class="card-head" style="margin-bottom:8px;">
+          <div><p class="kicker">Last 12 months</p><h2 style="font-size:18px;">Monthly flow</h2></div>
+          <div class="chart-legend">
+            <span class="lg"><span class="sw" style="background:var(--c-join)"></span>Join</span>
+            <span class="lg"><span class="sw" style="background:var(--c-renew)"></span>Renew</span>
+            <span class="lg"><span class="sw" style="background:var(--c-jersey)"></span>Jersey</span>
+            <span class="lg"><span class="sw" style="background:var(--c-exp)"></span>Spend</span>
+          </div>
+        </div>
+        <div class="month-detail" id="monthDetail"></div>
+        <div class="mchart" id="monthChart"></div>
+      </article>
+
+      <article class="glass glass-card">
+        <div class="card-head" style="margin-bottom:6px;"><div><p class="kicker">Where it comes from</p><h2 style="font-size:18px;">Revenue mix</h2></div></div>
+        <div class="seg" id="revSeg"></div>
+        <div class="legend" id="revLegend"></div>
+
+        <p class="sub-h">Where it goes</p>
+        <div class="cats" id="expCats"></div>
+
+        <p class="sub-h">Paid by</p>
+        <div class="partners" id="paidBy"></div>
+      </article>
     </section>
 
+    <!-- expenses (collapsible) -->
     <section class="glass glass-card reveal d3">
       <div class="card-head">
-        <div><p class="kicker">Outgoing</p><h2>Expenses</h2></div>
-        <button class="btn btn-primary" id="addExpenseBtn">+ Add expense</button>
+        <div class="exp-head"><div><p class="kicker">Outgoing</p><h2>Expenses</h2></div></div>
+        <div class="flex">
+          <button class="btn btn-glass btn-sm" id="toggleExp">Hide list</button>
+          <button class="btn btn-primary btn-sm" id="addExpenseBtn">+ Add expense</button>
+        </div>
       </div>
-      <div class="table-wrap exp-table-wrap">
-        <table class="ga-table">
-          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Paid by</th><th>Comment</th><th></th></tr></thead>
-          <tbody id="expBody"></tbody>
-        </table>
+      <div id="expWrap">
+        <div class="table-wrap exp-table-wrap">
+          <table class="ga-table">
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Paid by</th><th>Comment</th><th></th></tr></thead>
+            <tbody id="expBody"></tbody>
+          </table>
+        </div>
+        <div id="expCards"></div>
+        <div id="expEmpty" class="empty-state hide">No expenses in this range.</div>
       </div>
-      <div id="expCards"></div>
-      <div id="expEmpty" class="empty-state hide">No expenses in this range.</div>
     </section>
   </main>
 
@@ -115,6 +200,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
+  <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=8"></script>
   <script src="assets/js/pages/finance.js?v=3"></script>
 </body>
