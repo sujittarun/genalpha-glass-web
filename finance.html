@@ -66,8 +66,7 @@
     .mcol { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:7px; height:100%; justify-content:flex-end; cursor:pointer; border-radius:8px; padding:4px 0 2px; transition:background .2s ease; }
     .mcol:hover, .mcol.sel { background:var(--row-hover); }
     .mbars { display:flex; gap:3px; align-items:flex-end; height:150px; }
-    .mrev { width:14px; display:flex; flex-direction:column-reverse; border-radius:5px 5px 0 0; overflow:hidden; transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; box-shadow:0 0 12px rgba(245,185,66,.18); }
-    .mrev i { display:block; width:100%; }
+    .mrev { width:14px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-join),rgba(245,185,66,.45)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; box-shadow:0 0 12px rgba(245,185,66,.25); }
     .mexp { width:9px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-exp),rgba(255,107,107,.4)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; }
     .mlbl { font-size:10px; color:var(--ink-low); }
     .mcol.sel .mlbl { color:var(--tx-gold); font-weight:700; }
@@ -136,9 +135,7 @@
         <div class="card-head" style="margin-bottom:8px;">
           <div><p class="kicker">Last 6 months</p><h2 style="font-size:18px;">Monthly flow</h2></div>
           <div class="chart-legend">
-            <span class="lg"><span class="sw" style="background:var(--c-join)"></span>Join</span>
-            <span class="lg"><span class="sw" style="background:var(--c-renew)"></span>Renew</span>
-            <span class="lg"><span class="sw" style="background:var(--c-jersey)"></span>Jersey</span>
+            <span class="lg"><span class="sw" style="background:var(--c-join)"></span>Revenue</span>
             <span class="lg"><span class="sw" style="background:var(--c-exp)"></span>Spend</span>
           </div>
         </div>
@@ -203,6 +200,6 @@
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=8"></script>
-  <script src="assets/js/pages/finance.js?v=4"></script>
+  <script src="assets/js/pages/finance.js?v=5"></script>
 </body>
 </html>

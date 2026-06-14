@@ -165,11 +165,7 @@
     $("monthChart").innerHTML = months.map((m, i) => `
       <div class="mcol${i === selMonth ? " sel" : ""}" data-i="${i}">
         <div class="mbars">
-          <div class="mrev" style="height:${h(m.joining + m.renewal + m.jersey)}px">
-            <i style="height:${h(m.joining)}px;background:var(--c-join)"></i>
-            <i style="height:${h(m.renewal)}px;background:var(--c-renew)"></i>
-            <i style="height:${h(m.jersey)}px;background:var(--c-jersey)"></i>
-          </div>
+          <div class="mrev" style="height:${h(m.joining + m.renewal + m.jersey)}px"></div>
           <div class="mexp" style="height:${h(m.exp)}px"></div>
         </div>
         <span class="mlbl">${m.label}</span>
@@ -182,10 +178,7 @@
     const rev = m.joining + m.renewal + m.jersey, net = rev - m.exp;
     $("monthDetail").innerHTML =
       `<span class="mn">${m.label}</span>` +
-      `<span class="seg-amt">Revenue <b>${fmtMoney(rev)}</b></span>` +
-      `<span class="seg-amt" style="color:var(--c-join)">Join <b>${fmtMoney(m.joining)}</b></span>` +
-      `<span class="seg-amt" style="color:var(--tx-blue)">Renew <b>${fmtMoney(m.renewal)}</b></span>` +
-      `<span class="seg-amt" style="color:#0f9b8e">Jersey <b>${fmtMoney(m.jersey)}</b></span>` +
+      `<span class="seg-amt" style="color:var(--tx-gold)">Revenue <b>${fmtMoney(rev)}</b></span>` +
       `<span class="seg-amt" style="color:var(--tx-red)">Spend <b>${fmtMoney(m.exp)}</b></span>` +
       `<span class="net ${net >= 0 ? "pos" : "neg"}">Net <b>${fmtMoney(net)}</b></span>`;
   }
