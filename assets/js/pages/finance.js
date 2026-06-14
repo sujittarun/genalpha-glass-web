@@ -10,7 +10,7 @@
 
   let students = [], payments = [], expenses = [];
   let rangeMode = "this-month";
-  let months = [], selMonth = 11;
+  let months = [], selMonth = 5;
 
   cfg.expenseTypes.forEach((t) => $("xType").insertAdjacentHTML("beforeend", `<option>${t}</option>`));
   cfg.expensePaidBy.forEach((p) => $("xPaidBy").insertAdjacentHTML("beforeend", `<option>${p}</option>`));
@@ -152,15 +152,16 @@
       ? paid.map(([p, v]) => `<div class="partner"><span class="pn">${esc(p)}</span><span class="pa num">${fmtMoney(v)}</span></div>`).join("")
       : `<p class="faint" style="font-size:13px;">—</p>`;
 
-    // Monthly flow (last 12) — revenue by type + expenses
+    // Monthly flow (last 6) — revenue by type + expenses
     const now = new Date();
     months = [];
-    for (let i = 11; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString("en-IN", { month: "short" }), joining: 0, renewal: 0, jersey: 0, exp: 0 }); }
+    for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString("en-IN", { month: "short" }), joining: 0, renewal: 0, jersey: 0, exp: 0 }); }
+    if (selMonth >= months.length) selMonth = months.length - 1;
     const idx = new Map(months.map((m, i) => [m.key, i]));
     payments.forEach((p) => { const k = payDate(p).slice(0, 7); if (idx.has(k)) { const t = ["renewal", "jersey"].includes(p.payment_type) ? p.payment_type : "joining"; months[idx.get(k)][t] += num(p.amount); } });
     expenses.forEach((x) => { const k = expDate(x).slice(0, 7); if (idx.has(k)) months[idx.get(k)].exp += num(x.amount); });
     const maxV = Math.max(1, ...months.map((m) => Math.max(m.joining + m.renewal + m.jersey, m.exp)));
-    const h = (v) => Math.round((v / maxV) * 120);
+    const h = (v) => Math.round((v / maxV) * 150);
     $("monthChart").innerHTML = months.map((m, i) => `
       <div class="mcol${i === selMonth ? " sel" : ""}" data-i="${i}">
         <div class="mbars">
@@ -188,19 +189,17 @@
       `<span class="seg-amt" style="color:var(--tx-red)">Spend <b>${fmtMoney(m.exp)}</b></span>` +
       `<span class="net ${net >= 0 ? "pos" : "neg"}">Net <b>${fmtMoney(net)}</b></span>`;
   }
+  // Tap a month → filter the whole page (KPIs, mix, categories, list) to it.
   $("monthChart").addEventListener("click", (e) => {
     const col = e.target.closest("[data-i]"); if (!col) return;
     selMonth = Number(col.dataset.i);
-    $("monthChart").querySelectorAll(".mcol").forEach((c) => c.classList.toggle("sel", c === col));
-    renderMonthDetail();
+    const m = months[selMonth]; if (!m) return;
+    const [y, mo] = m.key.split("-").map(Number);
+    $("fromDate").value = `${m.key}-01`;
+    $("toDate").value = isoOf(new Date(y, mo, 0));
+    [...$("rangeChips").children].forEach((c) => c.classList.remove("active"));
+    render();
   });
-  $("monthChart").addEventListener("pointermove", (e) => {
-    const col = e.target.closest("[data-i]"); if (!col) return;
-    const i = Number(col.dataset.i); if (i === selMonth) return;
-    selMonth = i;
-    $("monthChart").querySelectorAll(".mcol").forEach((c) => c.classList.toggle("sel", c === col));
-    renderMonthDetail();
-  }, { passive: true });
 
   /* ---------- expenses list ---------- */
   function renderExpenses() {

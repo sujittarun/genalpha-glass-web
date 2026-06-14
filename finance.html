@@ -26,7 +26,8 @@
     .stat-card .stat-value.neg{ background:linear-gradient(135deg,#e7565c,#c23840); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 
     /* layout */
-    .fin-grid { display:grid; grid-template-columns: 1.45fr 1fr; gap: var(--gap-3); align-items:start; }
+    .fin-grid { display:grid; grid-template-columns: 1.45fr 1fr; gap: var(--gap-3); align-items:stretch; }
+    .fin-grid > article { display:flex; flex-direction:column; }
     @media (max-width:1099px){ .fin-grid{ grid-template-columns:1fr; } }
 
     /* segmented bar (revenue mix / partners) */
@@ -60,13 +61,14 @@
     .month-detail .mn { font-family:var(--font-display); font-weight:700; color:var(--ink-hi); }
     .month-detail .seg-amt { color:var(--ink-mid); } .month-detail b{ color:var(--ink-hi); font-variant-numeric:tabular-nums; }
     .month-detail .net.pos{ color:var(--tx-green); } .month-detail .net.neg{ color:var(--tx-red); }
-    .mchart { display:flex; align-items:flex-end; gap:2px; height:150px; padding-top:6px; }
+    .mchart { display:flex; align-items:flex-end; gap:2px; height:184px; padding-top:6px; }
+    .mhint { font-size:11.5px; color:var(--ink-faint); text-align:center; margin-top:10px; }
     .mcol { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:7px; height:100%; justify-content:flex-end; cursor:pointer; border-radius:8px; padding:4px 0 2px; transition:background .2s ease; }
     .mcol:hover, .mcol.sel { background:var(--row-hover); }
-    .mbars { display:flex; gap:3px; align-items:flex-end; height:120px; }
-    .mrev { width:13px; display:flex; flex-direction:column-reverse; border-radius:5px 5px 0 0; overflow:hidden; transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; box-shadow:0 0 12px rgba(245,185,66,.18); }
-    .mrev i { display:block; }
-    .mexp { width:8px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-exp),rgba(255,107,107,.4)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; }
+    .mbars { display:flex; gap:3px; align-items:flex-end; height:150px; }
+    .mrev { width:14px; display:flex; flex-direction:column-reverse; border-radius:5px 5px 0 0; overflow:hidden; transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; box-shadow:0 0 12px rgba(245,185,66,.18); }
+    .mrev i { display:block; width:100%; }
+    .mexp { width:9px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-exp),rgba(255,107,107,.4)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; }
     .mlbl { font-size:10px; color:var(--ink-low); }
     .mcol.sel .mlbl { color:var(--tx-gold); font-weight:700; }
     .chart-legend { display:flex; flex-wrap:wrap; gap:12px; }
@@ -132,7 +134,7 @@
     <section class="fin-grid reveal d2">
       <article class="glass glass-card">
         <div class="card-head" style="margin-bottom:8px;">
-          <div><p class="kicker">Last 12 months</p><h2 style="font-size:18px;">Monthly flow</h2></div>
+          <div><p class="kicker">Last 6 months</p><h2 style="font-size:18px;">Monthly flow</h2></div>
           <div class="chart-legend">
             <span class="lg"><span class="sw" style="background:var(--c-join)"></span>Join</span>
             <span class="lg"><span class="sw" style="background:var(--c-renew)"></span>Renew</span>
@@ -142,16 +144,15 @@
         </div>
         <div class="month-detail" id="monthDetail"></div>
         <div class="mchart" id="monthChart"></div>
+        <p class="mhint">Tap any month to view its revenue &amp; expenses</p>
+        <p class="sub-h">Revenue mix · selected range</p>
+        <div class="seg" id="revSeg"></div>
+        <div class="legend" id="revLegend"></div>
       </article>
 
       <article class="glass glass-card">
-        <div class="card-head" style="margin-bottom:6px;"><div><p class="kicker">Where it comes from</p><h2 style="font-size:18px;">Revenue mix</h2></div></div>
-        <div class="seg" id="revSeg"></div>
-        <div class="legend" id="revLegend"></div>
-
-        <p class="sub-h">Where it goes</p>
+        <div class="card-head" style="margin-bottom:6px;"><div><p class="kicker">Outgoing</p><h2 style="font-size:18px;">Where it goes</h2></div></div>
         <div class="cats" id="expCats"></div>
-
         <p class="sub-h">Paid by</p>
         <div class="partners" id="paidBy"></div>
       </article>
@@ -202,6 +203,6 @@
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=8"></script>
-  <script src="assets/js/pages/finance.js?v=3"></script>
+  <script src="assets/js/pages/finance.js?v=4"></script>
 </body>
 </html>
