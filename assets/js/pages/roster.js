@@ -54,6 +54,23 @@
     if (due && due <= todayIso()) return { label: "Renewal due", cls: "red" };
     return { label: "Paid", cls: "green" };
   }
+  // effective fee due-date used for the "Fee due" column + sorting
+  function dueDate(s) {
+    if (s.discontinued) return null;
+    if (!s.fees_paid) return s.join_date || todayIso(); // joining fee owed since they joined
+    return nextDue(s);
+  }
+  function daysUntil(iso) { const v = daysSince(iso); return v == null ? null : -v; } // +ve = future
+  function feeDueCell(s) {
+    if (s.discontinued) return `<span class="pill">—</span>`;
+    if (!s.fees_paid) return `<span class="pill red">Joining due</span>`;
+    const due = nextDue(s);
+    if (!due) return `<span class="pill">—</span>`;
+    const d = daysUntil(due), t = `title="due ${fmtDate(due)}"`;
+    if (d < 0) return `<span class="pill red" ${t}>Overdue ${-d}d</span>`;
+    if (d === 0) return `<span class="pill gold" ${t}>Due today</span>`;
+    return `<span class="pill ${d <= 7 ? "gold" : "green"}" ${t}>Due in ${d}d</span>`;
+  }
   const returningIds = () => new Set(payments.filter((p) => p.payment_type === "renewal").map((p) => p.student_id));
 
   /* ---- attendance / retention helpers ---- */
@@ -131,7 +148,7 @@
   /* ---- load (with skeleton on first paint) ---- */
   let loadedOnce = false;
   function renderSkeleton() {
-    const skRow = `<tr><td colspan="9" style="padding:0;"><div class="sk-row">
+    const skRow = `<tr><td colspan="8" style="padding:0;"><div class="sk-row">
       <span class="skeleton" style="width:18%;"></span><span class="skeleton" style="width:6%;"></span>
       <span class="skeleton" style="width:9%;"></span><span class="skeleton" style="width:11%;"></span>
       <span class="skeleton" style="width:12%;"></span><span class="skeleton" style="width:11%;"></span>
@@ -196,8 +213,7 @@
       switch (sortKey) {
         case "age": return Number(s.age) || 0;
         case "join": return String(s.join_date || "");
-        case "due": { const d = s.fees_paid && !s.discontinued ? nextDue(s) : null; return d || "9999-99-99"; }
-        case "seen": { const v = daysSince(lastSeenMap.get(s.id)); return v == null ? 1e9 : v; }
+        case "due": return dueDate(s) || "9999-99-99";
         default: return String(s.name || "").toLowerCase();
       }
     };
@@ -275,7 +291,7 @@
   /* ---- mobile sort & filter sheet ---- */
   const chip = (active, label, attrs) => `<button type="button" class="chip ${active ? "active" : ""}" ${attrs}>${label}</button>`;
   function renderSheet() {
-    const sortOpts = [["name", "Name"], ["age", "Age"], ["join", "Joined"], ["due", "Next due"], ["seen", "Last seen"]];
+    const sortOpts = [["name", "Name"], ["age", "Age"], ["join", "Joined"], ["due", "Fee due"]];
     $("sheetBody").innerHTML =
       `<div class="sheet-grp"><div class="lbl">Sort by</div><div class="sheet-chips">${sortOpts.map(([k, l]) => chip(sortKey === k, l, `data-sk="${k}"`)).join("")}</div></div>` +
       `<div class="sheet-grp"><div class="lbl">Order</div><div class="sheet-chips">${chip(sortDir === "asc", "Ascending", 'data-sd="asc"')}${chip(sortDir === "desc", "Descending", 'data-sd="desc"')}</div></div>` +
@@ -328,15 +344,13 @@
 
     $("tableBody").innerHTML = list.map((s) => {
       const st = feeState(s);
-      const due = s.fees_paid && !s.discontinued ? nextDue(s) : null;
       return `<tr>
         <td><span class="t-name" data-open="${s.id}">${esc(s.name)}</span>${isAtRisk(s) ? '<span class="t-risk">AT&nbsp;RISK</span>' : ""}</td>
         <td class="num">${esc(s.age ?? "—")}</td>
         <td>${esc(s.time_slot || "—")}</td>
         <td class="num">${fmtDate(s.join_date)}</td>
         <td><span class="pill ${st.cls}">${st.label}</span></td>
-        <td class="num">${due ? fmtDate(due) : "—"}</td>
-        <td>${attCell(s)}</td>
+        <td>${feeDueCell(s)}</td>
         <td class="num">${esc(s.jersey_size || "—")}${s.jersey_pairs ? ` ×${s.jersey_pairs}` : ""}</td>
         <td><div class="flex" style="gap:6px;justify-content:flex-end;">
           <button class="btn btn-glass btn-sm" data-edit="${s.id}">Edit</button>
@@ -355,7 +369,7 @@
         <div class="rc-meta">
           <span class="pill">${esc(s.time_slot || "—")}</span>
           <span class="pill">Age ${esc(s.age ?? "—")}</span>
-          ${attMeta(s)}
+          ${feeDueCell(s)}
           ${s.jersey_size ? `<span class="pill">Jersey ${esc(s.jersey_size)}</span>` : ""}
         </div>
         <div class="rc-actions">
