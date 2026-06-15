@@ -15,14 +15,17 @@
   let editingId = null;
   let payingStudent = null;
   const lastSeenMap = new Map();
+  // sort + filter state (replaces the old native-select filter row)
+  let sortKey = "name", sortDir = "asc";
+  let fStatus = "active", fFee = "all", fJersey = "all";
+  const slotCounts = {};
 
-  /* ---- selects ---- */
+  /* ---- edit-modal selects ---- */
   cfg.timeSlots.forEach((s) => {
     $("eSlot").insertAdjacentHTML("beforeend", `<option value="${s}">${s}</option>`);
   });
   cfg.jerseySizes.forEach((s) => {
     $("eJerseySize").insertAdjacentHTML("beforeend", `<option value="${s}">${s}</option>`);
-    $("jerseyFilter").insertAdjacentHTML("beforeend", `<option value="${s}">${s}</option>`);
   });
 
   /* ---- due-date helpers (cycle-day based, mirrors v1 rule) ---- */
@@ -141,10 +144,13 @@
   }
   async function load() {
     if (!loadedOnce) renderSkeleton();
+    // order most-recent-first + raise the limit so Supabase's 1000-row default
+    // cap can't drop a student's latest payment/attendance (which corrupted
+    // "Last seen" and fee status on larger datasets).
     const [sRes, pRes, aRes] = await Promise.all([
       client.from("students").select("*").order("name", { ascending: true }),
-      client.from("student_payments").select("student_id, payment_type, cycle_start_date, months_covered"),
-      client.from("attendance").select("student_id, attendance_date"),
+      client.from("student_payments").select("student_id, payment_type, cycle_start_date, months_covered").order("cycle_start_date", { ascending: false }).limit(5000),
+      client.from("attendance").select("student_id, attendance_date").order("attendance_date", { ascending: false }).limit(5000),
     ]);
     if (sRes.error) return toast(sRes.error.message);
     loadedOnce = true;
@@ -158,54 +164,139 @@
     render();
   }
 
-  /* ---- slot chips ---- */
+  /* ---- slot counts (feed the Slot column filter) ---- */
   function renderSlots() {
-    const activeBySlot = {};
+    cfg.timeSlots.forEach((s) => { slotCounts[s] = 0; });
     students.filter((s) => !s.discontinued).forEach((s) => {
-      activeBySlot[s.time_slot] = (activeBySlot[s.time_slot] || 0) + 1;
+      if (s.time_slot in slotCounts) slotCounts[s.time_slot]++;
     });
-    $("slotChips").innerHTML = cfg.timeSlots.map((s) =>
-      `<button type="button" class="chip ${slotFilter === s ? "active" : ""}" data-slot="${s}">${s} · ${activeBySlot[s] || 0}</button>`
-    ).join("");
   }
-  $("slotChips").addEventListener("click", (e) => {
-    const chip = e.target.closest("[data-slot]");
-    if (!chip) return;
-    slotFilter = slotFilter === chip.dataset.slot ? "" : chip.dataset.slot;
-    renderSlots();
-    render();
-  });
 
-  /* ---- filtering ---- */
+  /* ---- filtering + sorting ---- */
   function filtered() {
     const q = $("searchInput").value.trim().toLowerCase();
-    const status = $("statusFilter").value;
-    const fee = $("feeFilter").value;
-    const type = $("typeFilter").value;
-    const jersey = $("jerseyFilter").value;
-    const retIds = returningIds();
-    return students.filter((s) => {
+    const list = students.filter((s) => {
       if (q && !String(s.name || "").toLowerCase().includes(q)) return false;
       if (riskFilter && !isAtRisk(s)) return false;
-      if (status === "active" && s.discontinued) return false;
-      if (status === "discontinued" && !s.discontinued) return false;
+      if (fStatus === "active" && s.discontinued) return false;
+      if (fStatus === "discontinued" && !s.discontinued) return false;
       if (slotFilter && s.time_slot !== slotFilter) return false;
-      if (jersey === "not-set" && s.jersey_size) return false;
-      if (jersey !== "all" && jersey !== "not-set" && String(s.jersey_size) !== jersey) return false;
-      if (type === "new" && retIds.has(s.id)) return false;
-      if (type === "returning" && !retIds.has(s.id)) return false;
+      if (fJersey === "not-set" && s.jersey_size) return false;
       const st = feeState(s);
-      if (fee === "paid" && st.label !== "Paid") return false;
-      if (fee === "not-paid" && st.label === "Paid") return false;
-      if (fee === "overdue" && st.label !== "Renewal due") return false;
+      if (fFee === "paid" && st.label !== "Paid") return false;
+      if (fFee === "not-paid" && st.label === "Paid") return false;
+      if (fFee === "overdue" && st.label !== "Renewal due") return false;
       return true;
     });
+    return sortList(list);
+  }
+  function sortList(list) {
+    const dir = sortDir === "asc" ? 1 : -1;
+    const val = (s) => {
+      switch (sortKey) {
+        case "age": return Number(s.age) || 0;
+        case "join": return String(s.join_date || "");
+        case "due": { const d = s.fees_paid && !s.discontinued ? nextDue(s) : null; return d || "9999-99-99"; }
+        case "seen": { const v = daysSince(lastSeenMap.get(s.id)); return v == null ? 1e9 : v; }
+        default: return String(s.name || "").toLowerCase();
+      }
+    };
+    return [...list].sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * dir; });
   }
   let shownCount = 30;
-  ["searchInput", "statusFilter", "feeFilter", "typeFilter", "jerseyFilter"].forEach((id) =>
-    $(id).addEventListener("input", () => { riskFilter = false; updatePulseActive(); shownCount = 30; render(); })
-  );
+  $("searchInput").addEventListener("input", () => { shownCount = 30; render(); });
   $("showMoreBtn").addEventListener("click", () => { shownCount += 30; render(); });
+
+  function syncStatusSeg() {
+    [...$("statusSeg").children].forEach((c) => c.classList.toggle("on", c.dataset.st === fStatus));
+  }
+
+  /* ---- status segmented control ---- */
+  $("statusSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-st]"); if (!b) return;
+    fStatus = b.dataset.st; riskFilter = false; updatePulseActive(); syncStatusSeg();
+    shownCount = 30; render();
+  });
+
+  /* ---- sortable headers ---- */
+  function updateHeader() {
+    document.querySelectorAll("th.th-sort").forEach((th) => {
+      const on = th.dataset.sort === sortKey;
+      th.classList.toggle("sorted", on);
+      const ar = th.querySelector(".ar");
+      if (ar) ar.textContent = on ? (sortDir === "asc" ? "▲" : "▼") : "▲";
+    });
+    document.querySelectorAll("th.th-filter").forEach((th) => {
+      const f = th.dataset.filter;
+      const active = (f === "slot" && slotFilter) || (f === "fee" && fFee !== "all") || (f === "jersey" && fJersey !== "all");
+      th.classList.toggle("filtered", !!active);
+    });
+  }
+  document.querySelectorAll("th.th-sort").forEach((th) => {
+    th.addEventListener("click", () => {
+      const k = th.dataset.sort;
+      if (sortKey === k) sortDir = sortDir === "asc" ? "desc" : "asc";
+      else { sortKey = k; sortDir = "asc"; }
+      updateHeader(); render();
+    });
+  });
+
+  /* ---- column filter popover ---- */
+  const POP = $("thPop");
+  let popCol = null;
+  function buildOpts() {
+    if (popCol === "fee") return [["all", "All"], ["paid", "Paid"], ["not-paid", "Unpaid"], ["overdue", "Overdue"]].map(([v, l]) => ({ v, l, sel: fFee === v }));
+    if (popCol === "jersey") return [["all", "All"], ["not-set", "Not set"]].map(([v, l]) => ({ v, l, sel: fJersey === v }));
+    return [{ v: "", l: "All slots", sel: !slotFilter }].concat(cfg.timeSlots.map((s) => ({ v: s, l: s, ct: slotCounts[s] || 0, sel: slotFilter === s })));
+  }
+  function openPop(th) {
+    popCol = th.dataset.filter;
+    POP.innerHTML = buildOpts().map((o) => `<button type="button" data-v="${o.v}" class="${o.sel ? "sel" : ""}">${esc(o.l)}${o.ct != null ? `<span class="ct">${o.ct}</span>` : ""}</button>`).join("");
+    const r = th.getBoundingClientRect();
+    POP.style.left = `${Math.min(r.left, window.innerWidth - 210)}px`;
+    POP.style.top = `${r.bottom + 6}px`;
+    POP.classList.add("open");
+  }
+  function closePop() { POP.classList.remove("open"); popCol = null; }
+  document.querySelectorAll("th.th-filter").forEach((th) => {
+    th.addEventListener("click", () => { if (popCol === th.dataset.filter) closePop(); else openPop(th); });
+  });
+  POP.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-v]"); if (!b) return;
+    const v = b.dataset.v;
+    if (popCol === "fee") fFee = v; else if (popCol === "jersey") fJersey = v; else slotFilter = v;
+    riskFilter = false; updatePulseActive(); updateHeader(); closePop(); shownCount = 30; render();
+  });
+  document.addEventListener("mousedown", (e) => {
+    if (POP.classList.contains("open") && !POP.contains(e.target) && !e.target.closest("th.th-filter")) closePop();
+  });
+  window.addEventListener("resize", closePop);
+
+  /* ---- mobile sort & filter sheet ---- */
+  const chip = (active, label, attrs) => `<button type="button" class="chip ${active ? "active" : ""}" ${attrs}>${label}</button>`;
+  function renderSheet() {
+    const sortOpts = [["name", "Name"], ["age", "Age"], ["join", "Joined"], ["due", "Next due"], ["seen", "Last seen"]];
+    $("sheetBody").innerHTML =
+      `<div class="sheet-grp"><div class="lbl">Sort by</div><div class="sheet-chips">${sortOpts.map(([k, l]) => chip(sortKey === k, l, `data-sk="${k}"`)).join("")}</div></div>` +
+      `<div class="sheet-grp"><div class="lbl">Order</div><div class="sheet-chips">${chip(sortDir === "asc", "Ascending", 'data-sd="asc"')}${chip(sortDir === "desc", "Descending", 'data-sd="desc"')}</div></div>` +
+      `<div class="sheet-grp"><div class="lbl">Status</div><div class="sheet-chips">${chip(fStatus === "active", "Active", 'data-fs="active"')}${chip(fStatus === "all", "All", 'data-fs="all"')}${chip(fStatus === "discontinued", "Past", 'data-fs="discontinued"')}</div></div>` +
+      `<div class="sheet-grp"><div class="lbl">Fee</div><div class="sheet-chips">${[["all", "All"], ["paid", "Paid"], ["not-paid", "Unpaid"], ["overdue", "Overdue"]].map(([v, l]) => chip(fFee === v, l, `data-ff="${v}"`)).join("")}</div></div>` +
+      `<div class="sheet-grp"><div class="lbl">Slot</div><div class="sheet-chips">${chip(!slotFilter, "All", 'data-fsl=""')}${cfg.timeSlots.map((s) => chip(slotFilter === s, `${s} · ${slotCounts[s] || 0}`, `data-fsl="${s}"`)).join("")}</div></div>` +
+      `<div class="sheet-grp"><div class="lbl">Jersey</div><div class="sheet-chips">${chip(fJersey === "all", "All", 'data-fj="all"')}${chip(fJersey === "not-set", "Not set", 'data-fj="not-set"')}</div></div>`;
+  }
+  $("mSortFilter").addEventListener("click", () => { renderSheet(); openModal("filterSheet"); });
+  $("sheetBody").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-sk],button[data-sd],button[data-fs],button[data-ff],button[data-fsl],button[data-fj]");
+    if (!b) return;
+    const d = b.dataset;
+    if (d.sk != null) sortKey = d.sk;
+    else if (d.sd != null) sortDir = d.sd;
+    else if (d.fs != null) { fStatus = d.fs; syncStatusSeg(); }
+    else if (d.ff != null) fFee = d.ff;
+    else if (d.fsl != null) slotFilter = d.fsl;
+    else if (d.fj != null) fJersey = d.fj;
+    riskFilter = false; updatePulseActive(); updateHeader(); renderSheet(); shownCount = 30; render();
+  });
 
   /* ---- pulse KPI quick-filters ---- */
   $("rosterPulse").addEventListener("click", (e) => {
@@ -213,17 +304,17 @@
     const j = card.dataset.jump;
     if (j === "atrisk") {
       riskFilter = !riskFilter;
-      if (riskFilter) { $("statusFilter").value = "active"; $("feeFilter").value = "all"; }
+      if (riskFilter) { fStatus = "active"; fFee = "all"; }
     } else {
       riskFilter = false;
-      $("statusFilter").value = "active"; $("searchInput").value = ""; slotFilter = "";
-      $("feeFilter").value = j === "needs" ? "not-paid" : "all";
-      renderSlots();
+      fStatus = "active"; $("searchInput").value = ""; slotFilter = ""; fJersey = "all";
+      fFee = j === "needs" ? "not-paid" : "all";
     }
-    updatePulseActive();
+    syncStatusSeg(); updatePulseActive(); updateHeader();
     shownCount = 30; render();
-    document.getElementById("tableWrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    $("tableWrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
+  updateHeader();
 
   /* ---- render (paged) ---- */
   function render() {

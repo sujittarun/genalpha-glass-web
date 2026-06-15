@@ -75,6 +75,48 @@
     .pa-meta { font-size: 12px; color: var(--ink-low); margin-top: 2px; }
     .pa-actions { display: flex; gap: 8px; }
 
+    /* status segmented control */
+    .seg-ctl { display:inline-flex; padding:4px; border-radius:var(--r-pill); background:var(--pill-bg); border:1px solid var(--tile-border); gap:2px; -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+    .seg-ctl button { padding:8px 16px; border:none; border-radius:var(--r-pill); background:transparent; color:var(--ink-mid); font-size:12.5px; font-weight:650; cursor:pointer; transition:color .2s, background .25s, box-shadow .25s; }
+    .seg-ctl button.on { color:#1d1503; background:linear-gradient(135deg,var(--gold-400),var(--gold-500)); box-shadow:0 5px 14px rgba(245,185,66,.3); }
+    .seg-ctl button:not(.on):hover { color:var(--ink-hi); }
+
+    /* ultra-glass sortable + filterable table header */
+    .ga-table thead th {
+      background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.12));
+      -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+      padding: 13px 14px;
+    }
+    :root[data-theme="dark"] .ga-table thead th { background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); }
+    .ga-table thead th:first-child { border-top-left-radius: var(--r-md); }
+    .ga-table thead th:last-child { border-top-right-radius: var(--r-md); }
+    .th-btn { display:inline-flex; align-items:center; gap:5px; border:none; background:transparent; color:inherit; font:inherit; letter-spacing:inherit; text-transform:inherit; cursor:pointer; padding:0; }
+    .th-btn .ar { font-size:8px; opacity:0; transition:opacity .2s, transform .2s; }
+    .ga-table thead th.sorted .th-btn { color:var(--tx-gold); }
+    .ga-table thead th.sorted .th-btn .ar { opacity:1; }
+    .th-btn .fi { font-size:9px; opacity:.45; }
+    .ga-table thead th.filtered .th-btn { color:var(--tx-gold); }
+    .ga-table thead th.filtered .th-btn .fi { opacity:1; }
+    .th-btn:hover { color:var(--ink-hi); }
+
+    /* glass dropdown popover (column filters) */
+    .th-pop { position:fixed; z-index:140; min-width:190px; max-height:60vh; overflow:auto; padding:7px; border-radius:var(--r-md);
+      opacity:0; pointer-events:none; transform:translateY(-6px); transition:opacity .2s ease, transform .28s var(--ease-spring); }
+    .th-pop.open { opacity:1; pointer-events:auto; transform:none; }
+    .th-pop button { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; padding:9px 12px; border:none; background:transparent; color:var(--ink-mid); border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; text-align:left; }
+    .th-pop button:hover { background:var(--ghost-hover); color:var(--ink-hi); }
+    .th-pop button.sel { color:var(--tx-gold); background:rgba(245,185,66,.12); }
+    .th-pop button .ct { font-size:11px; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+
+    /* mobile sort & filter sheet */
+    .sheet-grp { margin-bottom:16px; }
+    .sheet-grp .lbl { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-low); margin-bottom:9px; }
+    .sheet-chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .only-mobile-flex { display:none; }
+    @media (max-width:767px){ .only-mobile-flex { display:inline-flex; } }
+
     /* roster pulse KPIs */
     #rosterPulse .stat-card[data-jump] { cursor: pointer; }
     #rosterPulse .stat-card.on { border-color: rgba(245,185,66,.6); box-shadow: 0 0 0 2px rgba(245,185,66,.22), var(--glass-shadow); }
@@ -141,20 +183,27 @@
       <div class="bday-banner" id="bdayBanner" hidden></div>
 
       <div class="roster-toolbar">
-        <input type="search" class="search" id="searchInput" placeholder="Search student by name…" />
-        <div class="chip-row" id="slotChips"></div>
-      </div>
-      <div class="filters-row mt-2">
-        <select id="statusFilter" aria-label="Status filter"><option value="active">Active</option><option value="discontinued">Discontinued</option><option value="all">All</option></select>
-        <select id="feeFilter" aria-label="Fee filter"><option value="all">Fee: all</option><option value="paid">Paid</option><option value="not-paid">Not paid</option><option value="overdue">Overdue</option></select>
-        <select id="typeFilter" aria-label="Type filter"><option value="all">Type: all</option><option value="new">New</option><option value="returning">Returning</option></select>
-        <select id="jerseyFilter" aria-label="Jersey filter"><option value="all">Jersey: all</option><option value="not-set">Not set</option></select>
+        <input type="search" class="search" id="searchInput" placeholder="Search players…" />
+        <div class="seg-ctl" id="statusSeg">
+          <button type="button" data-st="active" class="on">Active</button>
+          <button type="button" data-st="all">All</button>
+          <button type="button" data-st="discontinued">Past</button>
+        </div>
+        <button type="button" class="btn btn-glass btn-sm only-mobile-flex" id="mSortFilter" style="margin-left:auto;">⇅ Sort &amp; filter</button>
       </div>
 
       <div class="table-wrap mt-3" id="tableWrap">
         <table class="ga-table">
           <thead><tr>
-            <th>Player</th><th>Age</th><th>Slot</th><th>Joined</th><th>Fee status</th><th>Next due</th><th>Last seen</th><th>Jersey</th><th></th>
+            <th class="th-sort" data-sort="name"><button type="button" class="th-btn">Player <span class="ar">▲</span></button></th>
+            <th class="th-sort" data-sort="age"><button type="button" class="th-btn">Age <span class="ar">▲</span></button></th>
+            <th class="th-filter" data-filter="slot"><button type="button" class="th-btn">Slot <span class="fi">▾</span></button></th>
+            <th class="th-sort" data-sort="join"><button type="button" class="th-btn">Joined <span class="ar">▲</span></button></th>
+            <th class="th-filter" data-filter="fee"><button type="button" class="th-btn">Fee status <span class="fi">▾</span></button></th>
+            <th class="th-sort" data-sort="due"><button type="button" class="th-btn">Next due <span class="ar">▲</span></button></th>
+            <th class="th-sort" data-sort="seen"><button type="button" class="th-btn">Last seen <span class="ar">▲</span></button></th>
+            <th class="th-filter" data-filter="jersey"><button type="button" class="th-btn">Jersey <span class="fi">▾</span></button></th>
+            <th></th>
           </tr></thead>
           <tbody id="tableBody"></tbody>
         </table>
@@ -166,6 +215,20 @@
       </div>
     </section>
   </main>
+
+  <!-- column filter popover (desktop) -->
+  <div class="th-pop glass" id="thPop" role="menu"></div>
+
+  <!-- mobile sort & filter sheet -->
+  <div class="ga-modal-backdrop" id="filterSheet">
+    <section class="glass ga-modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div><p class="kicker">Players</p><h3>Sort &amp; filter</h3></div>
+        <button class="btn btn-ghost btn-sm" data-close-modal="filterSheet">Done</button>
+      </div>
+      <div id="sheetBody"></div>
+    </section>
+  </div>
 
   <!-- Add / edit player modal -->
   <div class="ga-modal-backdrop" id="editModal">
@@ -236,6 +299,6 @@
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=8"></script>
-  <script src="assets/js/pages/roster.js?v=9"></script>
+  <script src="assets/js/pages/roster.js?v=10"></script>
 </body>
 </html>
