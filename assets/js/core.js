@@ -141,7 +141,7 @@
     { key: "finance", label: "Finance", href: "finance.html", icon: I.finance },
   ];
   const PUBLIC_TABS = [
-    { key: "admission", label: "Admission", href: "index.html", icon: I.admission },
+    { key: "admission", label: "Admission", href: "admission.html", icon: I.admission },
     { key: "attendance", label: "Attendance", href: "attendance.html", icon: I.attendance },
     { key: "pay", label: "Pay Fees", href: "pay.html", icon: I.pay },
   ];
@@ -162,7 +162,7 @@
     const action = mode === "manager"
       ? `${themeToggleHtml()}<span class="pill gold hide-mobile" id="navManagerEmail">manager</span>
          <button class="btn btn-glass btn-sm" id="navLogout">${I.logout}<span class="hide-mobile">Logout</span></button>`
-      : `${themeToggleHtml()}<a class="btn btn-glass btn-sm" href="login.html">Manager Login</a>`;
+      : `${themeToggleHtml()}<a class="btn btn-primary btn-sm" href="admission.html">Apply now</a>`;
 
     const nav = document.createElement("nav");
     nav.className = "ga-nav glass";

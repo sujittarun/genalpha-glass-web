@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#e8eef8" />
-  <title>Gen Alpha Cricket Academy — Admissions</title>
-  <meta name="description" content="Best cricket coaching academy for kids in Hyderabad | Professional training | Admissions open" />
+  <title>Gen Alpha Cricket Academy — Hyderabad | Admissions Open</title>
+  <meta name="description" content="Hyderabad's modern cricket academy for kids — certified coaching, real match practice, 5 daily batches, jersey & kit included. Admissions open." />
   <meta property="og:title" content="Gen Alpha Cricket Academy" />
-  <meta property="og:description" content="Best cricket coaching academy for kids in Hyderabad | Professional training | Admissions open" />
+  <meta property="og:description" content="Raise the next generation of cricketers — Manikonda, Hyderabad. Admissions open." />
   <meta property="og:image" content="https://genalphaacademy.in/assets/og-image_forpreview.jpg" />
   <meta property="og:type" content="website" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/gen-alpha-favicon-192.png" />
@@ -16,344 +16,275 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/glass.css?v=8" />
+  <link rel="stylesheet" href="assets/css/glass.css?v=9" />
   <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
-    /* --- page-specific: hero + admission form --- */
-    .hero {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: var(--gap-4);
-      align-items: stretch;
-    }
-    .hero-copy { padding: var(--gap-5); display: flex; flex-direction: column; justify-content: center; gap: var(--gap-3); }
-    .hero-copy h1 {
-      font-size: clamp(30px, 4.4vw, 46px);
-      font-weight: 800;
-      line-height: 1.08;
-    }
-    .hero-copy h1 .grad {
-      background: linear-gradient(120deg, var(--gold-400), #ffe6ae 60%, var(--gold-500));
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero-copy .lede { color: var(--ink-mid); font-size: 15.5px; max-width: 46ch; }
-    .hero-points { display: flex; flex-wrap: wrap; gap: 8px; }
-    .hero-cta { display: flex; gap: var(--gap-2); flex-wrap: wrap; margin-top: 4px; }
-    .hero-media { padding: var(--gap-3); display: flex; flex-direction: column; gap: var(--gap-2); }
-    .hero-media video {
-      width: 100%; aspect-ratio: 16/10.5; object-fit: cover;
-      border-radius: var(--r-lg);
-      border: 1px solid var(--tile-border);
-      box-shadow: 0 14px 36px rgba(18,38,80,0.25);
-      background: rgba(10,20,45,0.7);
-    }
-    .moment-links { display: flex; gap: 8px; flex-wrap: wrap; }
+    :root{ --saffron:#ff9933; --india-green:#138808; }
+    .lp { max-width: var(--page-max); margin: 0 auto; padding: 0 var(--gap-4); }
 
-    .adm-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--gap-4); align-items: start; }
-    .adm-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--gap-3); }
-    .adm-grid .full { grid-column: 1 / -1; }
-    fieldset.group {
-      border: none; margin: 0 0 var(--gap-4); padding: 0;
-    }
-    fieldset.group legend {
-      display: flex; align-items: center; gap: 10px;
-      font-family: var(--font-display); font-size: 16px; font-weight: 700;
-      margin-bottom: var(--gap-3); padding: 0; width: 100%;
-    }
-    fieldset.group legend .n {
-      width: 26px; height: 26px; flex: none; display: grid; place-items: center;
-      border-radius: 9px; font-size: 12.5px; color: #1d1503;
-      background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
-      box-shadow: 0 4px 12px rgba(245,185,66,0.35);
-    }
-    .dob-row { display: grid; grid-template-columns: 1.6fr 0.9fr; gap: 8px; align-items: end; }
-    .age-tile {
-      padding: 10px 12px; border-radius: var(--r-md); text-align: center;
-      background: rgba(245,185,66,0.12); border: 1px solid rgba(220,160,40,0.35);
-    }
-    .age-tile .v { font-family: var(--font-display); font-weight: 700; color: var(--tx-gold); font-size: 17px; }
-    .age-tile .l { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-low); }
+    /* top nav */
+    .lp-nav { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 60;
+      width: min(var(--page-max) - 16px, calc(100% - 24px)); display: flex; align-items: center; gap: var(--gap-3);
+      padding: 9px 10px 9px 14px; border-radius: var(--r-pill); }
+    .lp-nav.glass::after { display:none; }
+    .lp-brand { display:flex; align-items:center; gap:10px; }
+    .lp-brand img { width:38px; height:38px; border-radius:11px; box-shadow:0 4px 14px rgba(18,38,80,.3); }
+    .lp-brand strong { font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--ink-hi); }
+    .lp-brand span { display:block; font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--tx-gold); font-weight:700; }
+    .lp-nav .acts { margin-left:auto; display:flex; align-items:center; gap:10px; }
 
-    .fee-split { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .fee-split article {
-      padding: 10px 12px; border-radius: var(--r-md);
-      background: var(--tile-bg); border: 1px solid var(--tile-border);
-      display: flex; flex-direction: column; gap: 2px;
-    }
-    .fee-split article .l { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-low); }
-    .fee-split article .v { font-family: var(--font-display); font-weight: 700; font-size: 16.5px; }
-    .fee-split article.total { border-color: rgba(220,160,40,0.45); background: rgba(245,185,66,0.12); }
-    .fee-split article.total .v { color: var(--tx-gold); font-size: 19px; }
+    /* hero */
+    .hero { display:grid; grid-template-columns: 1.05fr .95fr; gap:var(--gap-4); align-items:center; min-height:92vh; padding-top:calc(var(--nav-h) + 20px); }
+    .hero h1 { font-size:clamp(36px,5.6vw,68px); line-height:1.03; font-weight:800; letter-spacing:-.02em; }
+    .hero h1 .grad { background:linear-gradient(115deg,var(--gold-400),#ffe6ae 55%,var(--gold-500)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero .lede { color:var(--ink-mid); font-size:clamp(15px,1.7vw,18px); max-width:48ch; margin-top:var(--gap-3); }
+    .hero-cta { display:flex; gap:var(--gap-2); flex-wrap:wrap; margin-top:var(--gap-4); }
+    .tri { height:5px; width:120px; border-radius:99px; margin-top:var(--gap-3);
+      background:linear-gradient(90deg,var(--saffron) 0 33%, #fff 33% 66%, var(--india-green) 66% 100%); box-shadow:0 4px 14px rgba(0,0,0,.12); }
+    .hero-points { display:flex; flex-wrap:wrap; gap:8px; margin-top:var(--gap-4); }
 
-    .reg-banner {
-      display: flex; justify-content: space-between; align-items: center; gap: var(--gap-3);
-      padding: var(--gap-3); border-radius: var(--r-lg); margin-bottom: var(--gap-4);
-      background: linear-gradient(120deg, rgba(82,140,235,0.16), rgba(245,185,66,0.12));
-      border: 1px solid var(--tile-border);
-    }
-    .reg-banner .rno { font-family: var(--font-display); font-size: 21px; font-weight: 800; color: var(--tx-gold); }
+    /* hero art */
+    .hero-art { position:relative; height:min(560px,70vh); display:grid; place-items:center; }
+    .hero-art .disc { position:absolute; width:78%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 38% 32%, rgba(245,185,66,.5), rgba(110,168,255,.25) 55%, transparent 72%); filter:blur(8px); animation:floaty 7s ease-in-out infinite; }
+    .hero-art svg { position:relative; width:84%; height:auto; filter:drop-shadow(0 26px 50px rgba(18,38,80,.3)); }
+    .hero-art .ball { position:absolute; right:8%; top:14%; width:74px; height:74px; border-radius:50%;
+      background:radial-gradient(circle at 34% 30%, #ff7a6a, #d4302a 60%, #931c17); box-shadow:inset -6px -6px 12px rgba(0,0,0,.4), 0 16px 30px rgba(180,40,30,.35); animation:floaty 5s ease-in-out infinite; }
+    .hero-art .ball::after { content:""; position:absolute; inset:0; border-radius:50%; border-top:2px dashed rgba(255,240,230,.85); transform:rotate(28deg) scaleY(.9); }
+    @keyframes floaty { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-16px); } }
 
-    .style-grid { display: grid; gap: 8px; }
-    .sticky-side { position: sticky; top: calc(var(--nav-h) + 18px); display: flex; flex-direction: column; gap: var(--gap-4); }
+    /* sections */
+    .sec { padding:clamp(48px,8vh,96px) 0; }
+    .sec-h { text-align:center; max-width:60ch; margin:0 auto var(--gap-5); }
+    .sec-h h2 { font-size:clamp(26px,3.6vw,40px); font-weight:800; letter-spacing:-.02em; }
+    .sec-h p { color:var(--ink-mid); font-size:16px; margin-top:10px; }
 
-    @media (max-width: 1099px) {
-      .hero { grid-template-columns: 1fr; }
-      .adm-layout { grid-template-columns: 1fr; }
-      .sticky-side { position: static; }
+    /* stats band */
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap-3); }
+    .stat-b { text-align:center; padding:var(--gap-4) var(--gap-3); }
+    .stat-b .v { font-family:var(--font-display); font-weight:800; font-size:clamp(30px,4vw,46px); background:var(--stat-grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .stat-b .l { font-size:12.5px; color:var(--ink-low); margin-top:4px; letter-spacing:.02em; }
+
+    /* features */
+    .feat { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap-3); }
+    .feat-c { padding:var(--gap-4); display:flex; flex-direction:column; gap:10px; }
+    .feat-c .ic { width:52px; height:52px; border-radius:16px; display:grid; place-items:center; color:#1d1503;
+      background:linear-gradient(135deg,var(--gold-400),var(--gold-500)); box-shadow:0 10px 22px rgba(245,185,66,.35); }
+    .feat-c .ic svg { width:26px; height:26px; }
+    .feat-c h3 { font-size:17px; font-weight:700; }
+    .feat-c p { font-size:13.5px; color:var(--ink-mid); }
+
+    /* jersey showcase */
+    .jersey-wrap { display:grid; grid-template-columns:.9fr 1.1fr; gap:var(--gap-5); align-items:center; }
+    .jersey-art { display:grid; place-items:center; }
+    .jersey-art svg { width:min(360px,80%); filter:drop-shadow(0 28px 46px rgba(18,38,80,.32)); animation:floaty 6s ease-in-out infinite; }
+
+    /* steps */
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--gap-3); counter-reset:st; }
+    .step { padding:var(--gap-4); position:relative; }
+    .step .n { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:var(--font-display); font-weight:800; color:#1d1503; background:linear-gradient(135deg,var(--gold-400),var(--gold-500)); margin-bottom:12px; }
+    .step h3 { font-size:16.5px; font-weight:700; } .step p { font-size:13.5px; color:var(--ink-mid); margin-top:5px; }
+
+    /* final cta */
+    .cta-card { text-align:center; padding:clamp(40px,7vh,72px) var(--gap-4); }
+    .cta-card h2 { font-size:clamp(28px,4vw,46px); font-weight:800; letter-spacing:-.02em; }
+    .cta-card p { color:var(--ink-mid); margin:12px auto var(--gap-4); max-width:46ch; }
+
+    /* footer */
+    .lp-foot { padding:var(--gap-5) 0 calc(var(--gap-5) + 10px); border-top:1px solid var(--line); margin-top:var(--gap-5); }
+    .lp-foot .row { display:flex; justify-content:space-between; gap:var(--gap-3); flex-wrap:wrap; align-items:center; }
+    .lp-foot a { font-size:13px; }
+    .lp-foot .staff { color:var(--ink-faint); font-size:12px; }
+    .lp-foot .staff:hover { color:var(--tx-gold); }
+
+    @media (max-width:900px){
+      .hero{ grid-template-columns:1fr; min-height:auto; text-align:center; gap:var(--gap-3); }
+      .hero .lede{ margin-left:auto; margin-right:auto; } .tri{ margin-left:auto; margin-right:auto; }
+      .hero-cta,.hero-points{ justify-content:center; }
+      .hero-art{ height:340px; order:-1; }
+      .stats,.feat{ grid-template-columns:repeat(2,1fr); }
+      .jersey-wrap,.steps{ grid-template-columns:1fr; }
     }
-    @media (max-width: 767px) {
-      .hero-copy { padding: var(--gap-4); }
-      .adm-grid { grid-template-columns: 1fr; }
-      .dob-row { grid-template-columns: 1.4fr 0.9fr; }
-      .fee-split { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width:520px){ .lp-brand span{ display:none; } .stats{ grid-template-columns:1fr 1fr; } }
   </style>
 </head>
 <body>
-  <main class="ga-page">
+  <!-- top nav -->
+  <nav class="lp-nav glass">
+    <a class="lp-brand" href="index.html">
+      <img src="assets/img/gen-alpha-favicon-512.png" alt="Gen Alpha Cricket Academy" />
+      <span class="t"><strong>Gen Alpha Cricket Academy</strong><span>Manikonda · Hyderabad</span></span>
+    </a>
+    <div class="acts">
+      <button type="button" class="theme-toggle"></button>
+      <a class="btn btn-glass btn-sm hide-mobile" href="pay.html">Pay fees</a>
+      <a class="btn btn-primary btn-sm" href="admission.html">Apply now</a>
+    </div>
+  </nav>
 
+  <main class="lp">
     <!-- HERO -->
-    <section class="hero reveal">
-      <div class="glass glass-hover hero-copy">
-        <p class="kicker">Admissions Open · Manikonda, Hyderabad</p>
+    <section class="hero">
+      <div class="reveal">
+        <p class="kicker">Admissions open · 2026 season</p>
         <h1>Raise the next <span class="grad">generation</span> of cricketers.</h1>
-        <p class="lede">Professional cricket coaching for kids — structured training, real match practice, and a coaching team that cares about every player's journey.</p>
+        <div class="tri"></div>
+        <p class="lede">Hyderabad's modern cricket academy for young players — certified coaching, real match practice, and a team that cares about every child's journey on the pitch.</p>
         <div class="hero-points">
           <span class="pill gold">Certified coaches</span>
-          <span class="pill blue">5 daily time slots</span>
-          <span class="pill green">All skill levels</span>
+          <span class="pill blue">5 daily batches</span>
+          <span class="pill green">All age groups</span>
           <span class="pill">Jersey &amp; kit included</span>
         </div>
         <div class="hero-cta">
-          <a href="#admissionForm" class="btn btn-primary btn-lg">Start admission</a>
-          <a href="pay.html" class="btn btn-glass btn-lg">Pay fees</a>
+          <a class="btn btn-primary btn-lg" href="admission.html">Start admission →</a>
+          <a class="btn btn-glass btn-lg" href="pay.html">Pay fees</a>
         </div>
       </div>
-      <div class="glass hero-media">
-        <video controls playsinline preload="metadata" poster="" src="https://genalphaacademy.in/assets/videos/academy-feature.mp4"></video>
-        <div class="moment-links">
-          <a class="chip" href="https://www.instagram.com/p/DX7KNNXTsjM/" target="_blank" rel="noopener">▶ Training</a>
-          <a class="chip" href="https://www.instagram.com/p/DX9hyIQzM-3/" target="_blank" rel="noopener">▶ Match day</a>
-          <a class="chip" href="https://www.instagram.com/p/DX7Nld0zX2T/" target="_blank" rel="noopener">▶ Academy reel</a>
-        </div>
+      <div class="hero-art reveal d1" id="heroArt">
+        <div class="disc"></div>
+        <div class="ball"></div>
+        <!-- original batsman illustration (cover drive) -->
+        <svg viewBox="0 0 220 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="jr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f6fe0"/><stop offset="1" stop-color="#13357a"/></linearGradient>
+            <linearGradient id="bt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5d08a"/><stop offset="1" stop-color="#c98a2a"/></linearGradient>
+          </defs>
+          <ellipse cx="110" cy="246" rx="78" ry="11" fill="rgba(18,38,80,.16)"/>
+          <!-- legs -->
+          <path d="M96 150 L84 232 100 234 116 158Z" fill="#14264a"/>
+          <path d="M120 150 L150 224 162 218 134 150Z" fill="#1a3566"/>
+          <!-- pads -->
+          <rect x="80" y="180" width="26" height="54" rx="9" fill="#eef3fb" stroke="#cdd9ef" stroke-width="2"/>
+          <!-- torso (jersey) -->
+          <path d="M88 86 Q110 74 134 88 L140 156 Q110 168 80 156Z" fill="url(#jr)"/>
+          <path d="M96 92 h28" stroke="#ffcf6a" stroke-width="3" stroke-linecap="round"/>
+          <!-- head + helmet -->
+          <circle cx="112" cy="60" r="20" fill="#2a3550"/>
+          <path d="M92 60 a20 20 0 0 1 40 0 Z" fill="#1f2a44"/>
+          <rect x="90" y="58" width="20" height="6" rx="3" fill="#aab4c8"/>
+          <!-- front arm + gloves -->
+          <path d="M134 96 q34 8 44 40" stroke="url(#jr)" stroke-width="13" stroke-linecap="round"/>
+          <!-- bat (driving) -->
+          <g transform="rotate(38 176 138)"><rect x="168" y="96" width="16" height="92" rx="7" fill="url(#bt)"/><rect x="171" y="84" width="10" height="20" rx="4" fill="#3a2a14"/></g>
+        </svg>
       </div>
     </section>
 
-    <!-- ADMISSION FORM -->
-    <section class="glass glass-card reveal d1" id="admissionFormPanel">
-      <div class="card-head">
+    <!-- STATS -->
+    <section class="sec">
+      <div class="stats">
+        <article class="glass glass-hover stat-b reveal"><div class="v" data-count="500" data-suffix="+">500+</div><div class="l">Young cricketers coached</div></article>
+        <article class="glass glass-hover stat-b reveal d1"><div class="v" data-count="5">5</div><div class="l">Daily training batches</div></article>
+        <article class="glass glass-hover stat-b reveal d2"><div class="v" data-count="8" data-suffix="+">8+</div><div class="l">Years of coaching</div></article>
+        <article class="glass glass-hover stat-b reveal d3"><div class="v">All</div><div class="l">Age groups &amp; levels</div></article>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="sec">
+      <div class="sec-h reveal">
+        <h2>Built for serious cricket, made for kids</h2>
+        <p>Everything a young cricketer needs to fall in love with the game and grow with it.</p>
+      </div>
+      <div class="feat">
+        <article class="glass glass-hover feat-c reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M6 6c4 3 8 7 12 12M18 6C14 9 10 13 6 18"/></svg></div>
+          <h3>Structured coaching</h3><p>Batting, bowling and fielding fundamentals taught in a clear, age-appropriate curriculum.</p>
+        </article>
+        <article class="glass glass-hover feat-c reveal d1">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6"/><path d="M14 4l6 6"/><path d="M3 21l3-1"/></svg></div>
+          <h3>Real match practice</h3><p>Regular nets and match-day games so skills are tested where it matters — in the middle.</p>
+        </article>
+        <article class="glass glass-hover feat-c reveal d2">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 11l-2 2-1-1"/></svg></div>
+          <h3>Personal attention</h3><p>Small batches and a caring coaching team that tracks every player's progress.</p>
+        </article>
+        <article class="glass glass-hover feat-c reveal d3">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 2 2-1 2 1 4-2 2 4-3 1v10H7V9L4 8z"/></svg></div>
+          <h3>Jersey &amp; kit included</h3><p>Every player gets the official Gen Alpha academy jersey and kit on joining.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- JERSEY -->
+    <section class="sec">
+      <article class="glass glass-card jersey-wrap reveal">
+        <div class="jersey-art">
+          <svg viewBox="0 0 240 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs><linearGradient id="js" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b7bf0"/><stop offset="1" stop-color="#10306f"/></linearGradient></defs>
+            <path d="M70 28 L96 18 Q120 34 144 18 L170 28 L206 56 L184 86 L168 74 V224 Q120 238 72 224 V74 L56 86 L34 56 Z" fill="url(#js)" stroke="rgba(255,255,255,.25)" stroke-width="2"/>
+            <path d="M96 20 Q120 40 144 20" fill="none" stroke="#ffcf6a" stroke-width="4"/>
+            <text x="120" y="150" text-anchor="middle" font-family="Outfit,sans-serif" font-size="74" font-weight="800" fill="rgba(255,255,255,.92)">10</text>
+            <text x="120" y="100" text-anchor="middle" font-family="Outfit,sans-serif" font-size="16" font-weight="700" letter-spacing="2" fill="#ffcf6a">GEN ALPHA</text>
+            <rect x="60" y="232" width="120" height="6" rx="3" fill="url(#js)" opacity=".5"/>
+          </svg>
+        </div>
         <div>
-          <p class="kicker">First-time admission</p>
-          <h2>Parent admission form</h2>
-          <p class="sub">Fill the details below — the academy reviews every application before adding the player to the roster.</p>
+          <p class="kicker">The academy kit</p>
+          <h2 style="font-size:clamp(24px,3vw,34px);font-weight:800;">Wear the colours. Play with pride.</h2>
+          <p class="muted" style="margin-top:12px;font-size:15px;">Inspired by the blue every Indian kid dreams of, our jersey is part of the journey. New joiners receive their Gen Alpha jersey and kit — ready for nets, matches and team photos.</p>
+          <div class="tri" style="margin-top:18px;"></div>
         </div>
-      </div>
-
-      <form id="admissionForm" novalidate>
-        <div class="reg-banner">
-          <div>
-            <span class="faint" style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;">Registration number</span>
-            <div class="rno" id="regNo">…</div>
-          </div>
-          <p class="faint" style="font-size:12.5px;max-width:30ch;text-align:right;">Assigned only after the form is submitted successfully.</p>
-        </div>
-
-        <div class="adm-stepper" id="admStepper">
-          <div class="step active" data-step="1"><span class="num"><span class="n">1</span></span><span class="lbl">Player</span></div>
-          <span class="bar"></span>
-          <div class="step" data-step="2"><span class="num"><span class="n">2</span></span><span class="lbl">Family</span></div>
-          <span class="bar"></span>
-          <div class="step" data-step="3"><span class="num"><span class="n">3</span></span><span class="lbl">Training &amp; fees</span></div>
-          <span class="bar"></span>
-          <div class="step" data-step="4"><span class="num"><span class="n">4</span></span><span class="lbl">Skills &amp; consent</span></div>
-        </div>
-
-        <div class="adm-step active" data-step="1">
-          <fieldset class="group" style="margin-bottom:0;">
-            <legend>Player details</legend>
-            <div class="adm-grid">
-              <label class="field full"><span>Applicant name and initial</span>
-                <input id="applicantName" name="applicantName" type="text" placeholder="Example: Aarav K" required />
-              </label>
-              <label class="field"><span>Form filled by</span>
-                <select id="filledBy" name="filledBy">
-                  <option value="Parent / Guardian" selected>Parent / Guardian</option>
-                  <option value="Coach">Coach</option>
-                  <option value="Manager">Manager</option>
-                </select>
-              </label>
-              <label class="field"><span>Gender</span>
-                <select id="gender" name="gender" required>
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </label>
-              <div class="dob-row full">
-                <label class="field"><span>Date of birth</span>
-                  <input id="dob" type="date" required placeholder="Pick date of birth" />
-                </label>
-                <div class="age-tile"><div class="v" id="ageValue">—</div><div class="l">Age</div></div>
-              </div>
-              <label class="field"><span>Nationality</span>
-                <input id="nationality" name="nationality" type="text" value="Indian" required />
-              </label>
-            </div>
-          </fieldset>
-        </div>
-
-        <div class="adm-step" data-step="2">
-          <fieldset class="group" style="margin-bottom:0;">
-            <legend>Family &amp; contact</legend>
-            <div class="adm-grid">
-              <label class="field"><span>Father / guardian name</span>
-                <input id="guardianName" name="guardianName" type="text" required />
-              </label>
-              <label class="field"><span>Parent contact number</span>
-                <input id="parentContact" name="parentContact" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" required />
-              </label>
-              <label class="field"><span>Alternate contact number</span>
-                <input id="alternateContact" name="alternateContact" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" required />
-              </label>
-              <label class="field"><span>Parent Aadhaar <i class="opt">(optional)</i></span>
-                <input id="aadhaar" name="aadhaar" type="text" />
-              </label>
-              <label class="field"><span>School</span>
-                <input id="schoolCollege" name="schoolCollege" type="text" placeholder="School name" required />
-              </label>
-              <label class="field"><span>Grade</span>
-                <input id="grade" name="grade" type="text" placeholder="e.g. 5 or Grade 7" />
-              </label>
-              <label class="field"><span>City</span>
-                <input id="city" name="city" type="text" placeholder="e.g. Hyderabad" />
-              </label>
-              <label class="field full"><span>Home address (student)</span>
-                <textarea id="address" name="address" rows="2" placeholder="Full home address" required></textarea>
-              </label>
-            </div>
-          </fieldset>
-        </div>
-
-        <div class="adm-step" data-step="3">
-          <fieldset class="group" style="margin-bottom:0;">
-            <legend>Training &amp; payment</legend>
-            <div class="adm-grid">
-              <label class="field"><span>Time slot</span>
-                <select id="timeSlot" name="timeSlot" required><option value="">Select slot</option></select>
-              </label>
-              <label class="field"><span>Joining date</span>
-                <input id="joinDate" name="joinDate" type="date" required />
-              </label>
-              <label class="field"><span>Fee plan</span>
-                <select id="feePlan" name="feePlan">
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">3 months — 5% off</option>
-                  <option value="halfyearly">6 months — 10% off</option>
-                  <option value="special">Special training</option>
-                  <option value="custom">Custom amount</option>
-                </select>
-              </label>
-              <label class="field hide" id="customAmountField"><span>Custom amount</span>
-                <input id="customAmount" type="number" min="0" step="1" placeholder="Enter amount" />
-              </label>
-              <label class="field"><span>Jersey size</span>
-                <select id="jerseySize"><option value="">Not set</option></select>
-              </label>
-              <label class="field"><span>Jersey pairs <i class="opt">(₹750 / pair)</i></span>
-                <input id="jerseyPairs" type="number" min="0" step="1" placeholder="e.g. 1" />
-              </label>
-              <div class="fee-split full" id="feeSplit" aria-live="polite">
-                <article><span class="l">Coaching fee</span><span class="v num" id="feeCoaching">₹3,500</span></article>
-                <article><span class="l">Admission fee</span><span class="v num" id="feeAdmission">₹500</span></article>
-                <article><span class="l">Jersey</span><span class="v num" id="feeJersey">₹0</span></article>
-                <article class="total"><span class="l">Total due</span><span class="v num" id="feeTotal">₹4,000</span></article>
-              </div>
-              <div class="full flex between wrap">
-                <label class="field grow"><span>Fees paid?</span>
-                  <select id="feesPaid">
-                    <option value="no" selected>No — will pay later</option>
-                    <option value="yes">Paid by UPI — manager will verify</option>
-                  </select>
-                </label>
-                <button type="button" class="btn btn-glass" id="payNowBtn" style="margin-top:22px;">Pay now via UPI</button>
-              </div>
-            </div>
-          </fieldset>
-        </div>
-
-        <div class="adm-step" data-step="4">
-          <fieldset class="group">
-            <legend>Skills &amp; playing style</legend>
-            <label class="choice" style="margin-bottom:10px;">
-              <input id="readyToStart" type="checkbox" /><span class="dot"></span>
-              <span>Kick start the journey now — skip style details</span>
-            </label>
-            <div id="styleOptions" class="style-grid">
-              <p class="kicker" style="margin-top:6px;">Batsman style</p>
-              <label class="choice"><input type="radio" name="batsmanStyle" value="Right Handed Batsman" /><span class="dot"></span><span>Right handed batsman</span></label>
-              <label class="choice"><input type="radio" name="batsmanStyle" value="Left Handed Batsman" /><span class="dot"></span><span>Left handed batsman</span></label>
-              <p class="kicker" style="margin-top:6px;">Bowling style</p>
-              <label class="choice"><input type="checkbox" name="bowlingStyles" value="Right Arm Fast Bowler" /><span class="dot"></span><span>Right arm fast</span></label>
-              <label class="choice"><input type="checkbox" name="bowlingStyles" value="Left Arm Fast Bowler" /><span class="dot"></span><span>Left arm fast</span></label>
-              <label class="choice"><input type="checkbox" name="bowlingStyles" value="Right Arm Off Spinner" /><span class="dot"></span><span>Right arm off spin</span></label>
-              <label class="choice"><input type="checkbox" name="bowlingStyles" value="Left Arm Leg Spinner" /><span class="dot"></span><span>Left arm leg spin</span></label>
-            </div>
-          </fieldset>
-
-          <fieldset class="group" style="margin-bottom:0;">
-            <legend>Notes &amp; consent</legend>
-            <label class="field" style="margin-bottom:12px;"><span>Comments / special requests <i class="opt">(optional)</i></span>
-              <textarea id="comments" rows="3" placeholder="Previous coaching, medical conditions, preferences…"></textarea>
-            </label>
-            <p class="muted" style="font-size:13px;margin-bottom:10px;">I agree to academy rules, punctuality, monthly fee timelines, and understand that cricket can involve sports-related injuries during training or matches.</p>
-            <div class="style-grid">
-              <label class="choice"><input id="consentAccepted" type="checkbox" required /><span class="dot"></span><span>I accept the academy rules and injury-related consent.</span></label>
-              <label class="choice"><input id="termsAccepted" type="checkbox" required /><span class="dot"></span><span>I confirm the fee, discipline, and academy property terms.</span></label>
-            </div>
-          </fieldset>
-        </div>
-
-        <p id="admissionMsg" class="form-msg" aria-live="polite" style="margin-top:var(--gap-3);"></p>
-        <div class="adm-nav">
-          <button type="button" class="btn btn-ghost hide" id="admBack">← Back</button>
-          <span class="grow"></span>
-          <button type="button" class="btn btn-ghost" id="resetBtn">Reset</button>
-          <button type="button" class="btn btn-primary btn-lg" id="admNext">Continue →</button>
-          <button type="submit" class="btn btn-primary btn-lg hide" id="submitBtn">Submit admission</button>
-        </div>
-      </form>
+      </article>
     </section>
 
-    <footer class="center faint reveal d2" style="font-size:12.5px;padding-top:6px;">
-      Gen Alpha Cricket Academy · Manikonda, Hyderabad · <a href="pay.html">Fee payment</a>
+    <!-- STEPS -->
+    <section class="sec">
+      <div class="sec-h reveal"><h2>Joining is simple</h2><p>Three quick steps and your child is on the pitch.</p></div>
+      <div class="steps">
+        <article class="glass glass-hover step reveal"><div class="n">1</div><h3>Apply online</h3><p>Fill the quick admission form — player details, batch and plan. Two minutes, fully online.</p></article>
+        <article class="glass glass-hover step reveal d1"><div class="n">2</div><h3>We review &amp; confirm</h3><p>The academy reviews your application and confirms the slot and joining details.</p></article>
+        <article class="glass glass-hover step reveal d2"><div class="n">3</div><h3>Start training</h3><p>Collect the kit, meet the coaches, and begin the journey with your batch.</p></article>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="sec">
+      <article class="glass glass-card cta-card reveal">
+        <div class="tri" style="margin:0 auto 20px;"></div>
+        <h2>Admissions are open.</h2>
+        <p>Give your child the coaching, the kit and the team. Spots in each batch are limited.</p>
+        <a class="btn btn-primary btn-lg" href="admission.html">Start admission →</a>
+      </article>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="lp-foot">
+      <div class="row">
+        <div class="faint" style="font-size:12.5px;">© Gen Alpha Cricket Academy · Manikonda, Hyderabad</div>
+        <div class="flex" style="gap:16px;">
+          <a href="admission.html">Admission</a>
+          <a href="attendance.html">Attendance</a>
+          <a href="pay.html">Pay fees</a>
+          <a href="login.html" class="staff">Manager login</a>
+        </div>
+      </div>
     </footer>
   </main>
 
-  <!-- UPI payment modal -->
-  <div class="ga-modal-backdrop" id="payModal">
-    <section class="glass ga-modal" role="dialog" aria-modal="true">
-      <div class="modal-head">
-        <div>
-          <p class="kicker">UPI payment</p>
-          <h3>Pay the admission total</h3>
-        </div>
-        <button type="button" class="btn btn-ghost btn-sm" data-close-modal="payModal">Close</button>
-      </div>
-      <div class="center" style="display:flex;flex-direction:column;gap:14px;align-items:center;">
-        <div class="stat-card" style="padding:0;"><span class="stat-value num" id="payAmount">₹4,000</span></div>
-        <div id="payQr" style="background:#fff;padding:14px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.4);"></div>
-        <p class="muted" style="font-size:13px;">UPI ID: <strong class="gold" id="payUpiId"></strong> · Gen Alpha Cricket Academy</p>
-        <a class="btn btn-primary btn-block only-mobile" id="payUpiLink" href="#">Open UPI app &amp; pay</a>
-        <p class="faint" style="font-size:12px;max-width:42ch;">After paying, set “Fees paid?” to <strong>Paid by UPI</strong> and submit — the academy verifies and confirms your payment.</p>
-      </div>
-    </section>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="assets/js/config.js?v=1"></script>
-  <script src="assets/js/fees.js?v=1"></script>
-  <script src="assets/js/core.js?v=8"></script>
-  <script src="assets/js/pages/admission.js?v=8"></script>
+  <script src="assets/js/core.js?v=9"></script>
+  <script>
+    (function () {
+      // backdrop (cricket motif) + theme + scroll reveal come from core.js
+      if (!document.querySelector(".ga-bg")) { const bg = document.createElement("div"); bg.className = "ga-bg"; document.body.prepend(bg); }
+      window.GA && window.GA.initReveal && window.GA.initReveal();
+      // count-up stats on scroll
+      const io = new IntersectionObserver((ents) => ents.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const el = e.target, to = +el.dataset.count, suf = el.dataset.suffix || "", t0 = performance.now();
+        (function f(n) { const p = Math.min(1, (n - t0) / 1100); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))) + suf; if (p < 1) requestAnimationFrame(f); })(performance.now());
+        io.unobserve(el);
+      }), { threshold: 0.4 });
+      document.querySelectorAll("[data-count]").forEach((el) => io.observe(el));
+      // subtle hero parallax
+      const art = document.getElementById("heroArt");
+      if (art && matchMedia("(hover:hover)").matches) {
+        addEventListener("scroll", () => { art.style.transform = `translateY(${Math.min(60, scrollY * 0.08)}px)`; }, { passive: true });
+      }
+    })();
+  </script>
 </body>
 </html>
