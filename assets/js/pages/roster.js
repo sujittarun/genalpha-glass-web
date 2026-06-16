@@ -61,16 +61,24 @@
     return nextDue(s);
   }
   function daysUntil(iso) { const v = daysSince(iso); return v == null ? null : -v; } // +ve = future
-  function feeDueCell(s) {
-    if (s.discontinued) return `<span class="pill">—</span>`;
-    if (!s.fees_paid) return `<span class="pill red">Joining due</span>`;
-    const due = nextDue(s);
-    if (!due) return `<span class="pill">—</span>`;
-    const d = daysUntil(due), t = `title="due ${fmtDate(due)}"`;
-    if (d < 0) return `<span class="pill red" ${t}>Overdue ${-d}d</span>`;
-    if (d === 0) return `<span class="pill gold" ${t}>Due today</span>`;
-    return `<span class="pill ${d <= 7 ? "gold" : "green"}" ${t}>Due in ${d}d</span>`;
+  // fee status as a modern dot + label (no pills, no red)
+  function feeStatusCell(s) {
+    const st = feeState(s);
+    const tone = st.label === "Paid" ? "good" : st.label === "Discontinued" ? "off" : "warn";
+    return `<span class="fstat"><i class="ball ${tone}"></i>${st.label}</span>`;
   }
+  // fee due as clean colored text
+  function feeDueCell(s) {
+    if (s.discontinued) return `<span class="fdue muted">—</span>`;
+    if (!s.fees_paid) return `<span class="fdue late">Joining due</span>`;
+    const due = nextDue(s);
+    if (!due) return `<span class="fdue muted">—</span>`;
+    const d = daysUntil(due), t = `title="due ${fmtDate(due)}"`;
+    if (d < 0) return `<span class="fdue late" ${t}>Overdue ${-d}d</span>`;
+    if (d === 0) return `<span class="fdue soon" ${t}>Due today</span>`;
+    return `<span class="fdue ${d <= 7 ? "soon" : "ok"}" ${t}>Due in ${d}d</span>`;
+  }
+  const RISK_FLAG = '<span class="risk-flag" title="No attendance in 2+ weeks"><svg viewBox="0 0 16 16"><path class="pl" d="M2 1 V15"/><path class="fl" d="M2 2 H13 L10 5 H2 Z"/></svg>At risk</span>';
   const returningIds = () => new Set(payments.filter((p) => p.payment_type === "renewal").map((p) => p.student_id));
 
   /* ---- attendance / retention helpers ---- */
@@ -343,13 +351,12 @@
     $("showMoreBtn").textContent = `Show more players (${fullList.length - list.length} remaining)`;
 
     $("tableBody").innerHTML = list.map((s) => {
-      const st = feeState(s);
       return `<tr>
-        <td><span class="t-name" data-open="${s.id}">${esc(s.name)}</span>${isAtRisk(s) ? '<span class="t-risk">AT&nbsp;RISK</span>' : ""}</td>
+        <td><span class="t-name" data-open="${s.id}">${esc(s.name)}</span>${isAtRisk(s) ? RISK_FLAG : ""}</td>
         <td class="num">${esc(s.age ?? "—")}</td>
         <td>${esc(s.time_slot || "—")}</td>
         <td class="num">${fmtDate(s.join_date)}</td>
-        <td><span class="pill ${st.cls}">${st.label}</span></td>
+        <td>${feeStatusCell(s)}</td>
         <td>${feeDueCell(s)}</td>
         <td class="num">${esc(s.jersey_size || "—")}${s.jersey_pairs ? ` ×${s.jersey_pairs}` : ""}</td>
         <td><div class="flex" style="gap:6px;justify-content:flex-end;">
@@ -360,11 +367,10 @@
     }).join("");
 
     $("cardsList").innerHTML = list.map((s) => {
-      const st = feeState(s);
       return `<article class="glass row-card">
         <div class="rc-top">
-          <span class="rc-name t-name" data-open="${s.id}">${esc(s.name)}${isAtRisk(s) ? '<span class="t-risk">AT&nbsp;RISK</span>' : ""}</span>
-          <span class="pill ${st.cls}">${st.label}</span>
+          <span class="rc-name t-name" data-open="${s.id}">${esc(s.name)}${isAtRisk(s) ? RISK_FLAG : ""}</span>
+          ${feeStatusCell(s)}
         </div>
         <div class="rc-meta">
           <span class="pill">${esc(s.time_slot || "—")}</span>
