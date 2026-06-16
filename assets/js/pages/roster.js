@@ -65,7 +65,7 @@
   function feeStatusCell(s) {
     const st = feeState(s);
     const tone = st.label === "Paid" ? "good" : st.label === "Discontinued" ? "off" : "warn";
-    return `<span class="fstat"><i class="ball ${tone}"></i>${st.label}</span>`;
+    return `<span class="fstat"><i class="dot ${tone}"></i>${st.label}</span>`;
   }
   // fee due as clean colored text
   function feeDueCell(s) {
@@ -132,23 +132,6 @@
     $("kNeeds").textContent = needs;
     $("kRisk").textContent = risk;
   }
-  function renderBirthdays() {
-    const banner = $("bdayBanner");
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const list = [];
-    students.filter((s) => !s.discontinued && s.date_of_birth).forEach((s) => {
-      const d = new Date(`${String(s.date_of_birth).slice(0, 10)}T00:00:00`);
-      if (isNaN(d)) return;
-      let next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
-      if (next < today) next = new Date(today.getFullYear() + 1, d.getMonth(), d.getDate());
-      const diff = Math.round((next - today) / 86400000);
-      if (diff >= 0 && diff <= 14) list.push({ name: s.name, diff });
-    });
-    list.sort((a, b) => a.diff - b.diff);
-    banner.hidden = !list.length;
-    if (list.length) banner.innerHTML = `<span class="bt">🎂 Birthdays</span>` +
-      list.slice(0, 6).map((b) => `<span class="bd">${esc(b.name)} · ${b.diff === 0 ? "today" : b.diff === 1 ? "tomorrow" : "in " + b.diff + "d"}</span>`).join("");
-  }
   function updatePulseActive() {
     document.querySelector('#rosterPulse [data-jump="atrisk"]')?.classList.toggle("on", riskFilter);
   }
@@ -185,7 +168,6 @@
     buildAttendance();
     renderSlots();
     renderPulse();
-    renderBirthdays();
     render();
   }
 

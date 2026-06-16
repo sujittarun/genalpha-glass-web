@@ -123,19 +123,14 @@
     .kpi-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .kpi-act { font-size:10.5px; font-weight:700; color:var(--tx-gold); }
     /* birthdays */
-    .bday-banner { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:11px 15px; border-radius:var(--r-lg); margin-bottom:var(--gap-3);
-      background:linear-gradient(120deg, rgba(245,185,66,.16), rgba(110,168,255,.12)); border:1px solid var(--tile-border); font-size:13px; }
-    .bday-banner .bt { font-weight:700; color:var(--ink-hi); }
-    .bday-banner .bd { padding:3px 11px; border-radius:999px; background:var(--chip-bg); border:1px solid var(--chip-border); font-weight:650; color:var(--ink-mid); }
     /* ---- modern status cues (no red) ---- */
     /* fee status: glowing dot (cricket-ball seam) + label */
     .fstat { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:650; color:var(--ink-hi); white-space:nowrap; }
-    .fstat .ball { position:relative; width:11px; height:11px; border-radius:50%; flex:none; box-shadow:inset -2px -2px 3px rgba(0,0,0,.25); }
-    .fstat .ball::after { content:""; position:absolute; inset:1.5px; border-radius:50%; border-top:1.3px solid rgba(255,255,255,.75); transform:rotate(35deg) scaleY(.85); }
-    .fstat .ball.good { background:radial-gradient(circle at 34% 30%, #6ee7a0, #16a34a); }
-    .fstat .ball.warn { background:radial-gradient(circle at 34% 30%, #ffd87a, #e8920c); animation:stat-pulse 2.1s ease-in-out infinite; }
-    .fstat .ball.off  { background:radial-gradient(circle at 34% 30%, #cdd6e6, #8a96ab); }
-    @keyframes stat-pulse { 0%,100%{ box-shadow:inset -2px -2px 3px rgba(0,0,0,.25), 0 0 0 0 rgba(232,146,12,.55); } 70%{ box-shadow:inset -2px -2px 3px rgba(0,0,0,.25), 0 0 0 6px rgba(232,146,12,0); } }
+    .fstat .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+    .fstat .dot.good { background:var(--tx-green); box-shadow:0 0 0 3px rgba(74,222,128,.16); }
+    .fstat .dot.warn { background:#e8920c; animation:stat-pulse 2.1s ease-in-out infinite; }
+    .fstat .dot.off  { background:var(--ink-faint); }
+    @keyframes stat-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(232,146,12,.5); } 70%{ box-shadow:0 0 0 6px rgba(232,146,12,0); } }
 
     /* fee due: clean colored text, no pill */
     .fdue { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -152,7 +147,7 @@
     .risk-flag .pl { stroke:var(--ink-low); stroke-width:1.6; stroke-linecap:round; fill:none; }
     .risk-flag .fl { fill:#e8920c; transform-origin:2px 3px; animation:flag-wave 1.5s ease-in-out infinite; }
     @keyframes flag-wave { 0%,100%{ transform:skewY(0) scaleX(1); } 50%{ transform:skewY(-6deg) scaleX(.9); } }
-    @media (prefers-reduced-motion: reduce){ .fstat .ball.warn, .risk-flag .fl { animation:none; } }
+    @media (prefers-reduced-motion: reduce){ .fstat .dot.warn, .risk-flag .fl { animation:none; } }
   </style>
 </head>
 <body>
@@ -203,7 +198,6 @@
         <button class="btn btn-primary" id="addPlayerBtn">+ Add player</button>
       </div>
 
-      <div class="bday-banner" id="bdayBanner" hidden></div>
 
       <div class="roster-toolbar">
         <input type="search" class="search" id="searchInput" placeholder="Search players…" />
@@ -321,6 +315,6 @@
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=9"></script>
-  <script src="assets/js/pages/roster.js?v=12"></script>
+  <script src="assets/js/pages/roster.js?v=13"></script>
 </body>
 </html>
