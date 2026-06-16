@@ -13,7 +13,8 @@
   <script>document.documentElement.dataset.theme = localStorage.getItem("ga-theme") || "light"; document.documentElement.classList.add("ga-js");</script>
   <style>
     /* series colours */
-    :root{ --c-join:#f5b942; --c-renew:#6ea8ff; --c-jersey:#2dd4bf; --c-exp:#ff6b6b; }
+    :root{ --c-join:#f5b942; --c-renew:#6ea8ff; --c-jersey:#2dd4bf; --c-exp:#6f7b94; --c-exp-soft:rgba(111,123,148,.4); --c-loss:#c2740a; }
+    :root[data-theme="dark"]{ --c-exp:#9aa6c0; --c-exp-soft:rgba(154,166,192,.32); --c-loss:#f0a830; }
     .range-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .range-bar input[type="date"] { width: auto; padding: 9px 13px; font-size: 13px; }
 
@@ -21,9 +22,9 @@
     .kpi-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .trend { font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; }
     .trend.up{ color:var(--tx-green); background:rgba(74,222,128,.14); }
-    .trend.down{ color:var(--tx-red); background:rgba(255,107,107,.14); }
+    .trend.down{ color:var(--c-loss); background:rgba(194,116,10,.14); }
     .trend.flat{ color:var(--ink-low); background:var(--pill-bg); }
-    .stat-card .stat-value.neg{ background:linear-gradient(135deg,#e7565c,#c23840); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .stat-card .stat-value.neg{ background:linear-gradient(135deg,#e0a030,#c2740a); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 
     /* layout */
     .fin-grid { display:grid; grid-template-columns: 1.45fr 1fr; gap: var(--gap-3); align-items:stretch; }
@@ -46,7 +47,7 @@
     .cat .lbl { font-size:12px; color:var(--ink-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .cat .track { display:block; height:10px; border-radius:999px; background:rgba(18,38,80,.07); overflow:hidden; }
     :root[data-theme="dark"] .cat .track { background:rgba(255,255,255,.08); }
-    .cat .fill { display:block; height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,#ff9a6b,#e7565c); box-shadow:0 0 10px rgba(231,86,92,.3); transition:width .9s var(--ease-spring); }
+    .cat .fill { display:block; height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,#aab4ca,#6f7b94); box-shadow:0 0 10px rgba(111,123,148,.28); transition:width .9s var(--ease-spring); }
     .cat .amt { font-size:12.5px; font-weight:700; color:var(--ink-hi); font-variant-numeric:tabular-nums; }
 
     .partners { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
@@ -60,14 +61,14 @@
     .month-detail { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; min-height:22px; margin-bottom:10px; font-size:13px; }
     .month-detail .mn { font-family:var(--font-display); font-weight:700; color:var(--ink-hi); }
     .month-detail .seg-amt { color:var(--ink-mid); } .month-detail b{ color:var(--ink-hi); font-variant-numeric:tabular-nums; }
-    .month-detail .net.pos{ color:var(--tx-green); } .month-detail .net.neg{ color:var(--tx-red); }
+    .month-detail .net.pos{ color:var(--tx-green); } .month-detail .net.neg{ color:var(--c-loss); }
     .mchart { display:flex; align-items:flex-end; gap:2px; height:184px; padding-top:6px; }
     .mhint { font-size:11.5px; color:var(--ink-faint); text-align:center; margin-top:10px; }
     .mcol { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:7px; height:100%; justify-content:flex-end; cursor:pointer; border-radius:8px; padding:4px 0 2px; transition:background .2s ease; }
     .mcol:hover, .mcol.sel { background:var(--row-hover); }
     .mbars { display:flex; gap:3px; align-items:flex-end; height:150px; }
     .mrev { width:14px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-join),rgba(245,185,66,.45)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; box-shadow:0 0 12px rgba(245,185,66,.25); }
-    .mexp { width:9px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-exp),rgba(255,107,107,.4)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; }
+    .mexp { width:9px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--c-exp),var(--c-exp-soft)); transform-origin:bottom; animation:ga-grow-bar .7s var(--ease-spring) both; }
     .mlbl { font-size:10px; color:var(--ink-low); }
     .mcol.sel .mlbl { color:var(--tx-gold); font-weight:700; }
     .chart-legend { display:flex; flex-wrap:wrap; gap:12px; }
@@ -200,6 +201,6 @@
   <script src="assets/js/config.js?v=1"></script>
   <script src="assets/js/fees.js?v=1"></script>
   <script src="assets/js/core.js?v=8"></script>
-  <script src="assets/js/pages/finance.js?v=5"></script>
+  <script src="assets/js/pages/finance.js?v=6"></script>
 </body>
 </html>

@@ -51,6 +51,18 @@
     return end;
   }
 
+  // Revenue = student_payments (renewals/jersey/explicit joining) PLUS legacy
+  // joining fees stored on the students table (amount_paid for paid kids who
+  // have no explicit joining payment row). Mirrors the original app.
+  function allRevenueRows() {
+    const explicitJoin = new Set(payments.filter((p) => p.payment_type === "joining").map((p) => p.student_id));
+    const legacy = students
+      .filter((s) => s.fees_paid && num(s.amount_paid) > 0 && !explicitJoin.has(s.id))
+      .map((s) => ({ date: String(s.join_date || "").slice(0, 10), type: "joining", amount: num(s.amount_paid) }));
+    const pays = payments.map((p) => ({ date: payDate(p), type: ["renewal", "jersey"].includes(p.payment_type) ? p.payment_type : "joining", amount: num(p.amount) }));
+    return [...legacy, ...pays];
+  }
+
   /* ---------- range chips ---------- */
   $("rangeChips").addEventListener("click", (e) => {
     const chip = e.target.closest("[data-range]"); if (!chip) return;
@@ -66,8 +78,8 @@
   /* ---------- load ---------- */
   async function load() {
     const [sRes, pRes, eRes] = await Promise.all([
-      client.from("students").select("id, name, join_date, fees_paid, discontinued"),
-      client.from("student_payments").select("*").order("paid_on", { ascending: false }),
+      client.from("students").select("id, name, join_date, fees_paid, discontinued, amount_paid"),
+      client.from("student_payments").select("*").order("paid_on", { ascending: false }).limit(5000),
       client.from("academy_expenses").select("*").order("expense_date", { ascending: false }),
     ]);
     if (pRes.error) toast(pRes.error.message);
@@ -88,12 +100,13 @@
   function render() {
     const r = currentRange();
     const inR = (d) => d && d >= r.start && d <= r.end;
-    const rPays = payments.filter((p) => inR(payDate(p)));
+    const allRev = allRevenueRows();
+    const rRev = allRev.filter((rr) => inR(rr.date));
     const rExps = expenses.filter((x) => inR(expDate(x)));
 
-    const revenue = rPays.reduce((a, p) => a + num(p.amount), 0);
+    const revenue = rRev.reduce((a, rr) => a + rr.amount, 0);
     const rt = { joining: 0, renewal: 0, jersey: 0 }, rc = { joining: 0, renewal: 0, jersey: 0 };
-    rPays.forEach((p) => { const t = ["renewal", "jersey"].includes(p.payment_type) ? p.payment_type : "joining"; rt[t] += num(p.amount); rc[t]++; });
+    rRev.forEach((rr) => { const t = rt[rr.type] != null ? rr.type : "joining"; rt[t] += rr.amount; rc[t]++; });
     const spent = rExps.reduce((a, x) => a + num(x.amount), 0);
     const net = revenue - spent, margin = revenue > 0 ? Math.round((net / revenue) * 100) : 0;
 
@@ -102,7 +115,7 @@
     let revPct = null, expPct = null;
     if (pr) {
       const inP = (d) => d && d >= pr.start && d <= pr.end;
-      revPct = pctChange(revenue, payments.filter((p) => inP(payDate(p))).reduce((a, p) => a + num(p.amount), 0));
+      revPct = pctChange(revenue, allRev.filter((rr) => inP(rr.date)).reduce((a, rr) => a + rr.amount, 0));
       expPct = pctChange(spent, expenses.filter((x) => inP(expDate(x))).reduce((a, x) => a + num(x.amount), 0));
     }
 
@@ -111,7 +124,7 @@
     $("mExpenses").textContent = fmtMoney(spent);
     $("mNet").textContent = fmtMoney(net);
     $("mNet").classList.toggle("neg", net < 0);
-    $("mPaymentsCopy").textContent = `${rPays.length} payment${rPays.length === 1 ? "" : "s"} received`;
+    $("mPaymentsCopy").textContent = `${rRev.length} payment${rRev.length === 1 ? "" : "s"} received`;
     $("mExpenseCount").textContent = `${rExps.length} expense entr${rExps.length === 1 ? "y" : "ies"}`;
     setTrend($("revTrend"), revPct, true);
     setTrend($("expTrend"), expPct, false);
@@ -158,7 +171,7 @@
     for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString("en-IN", { month: "short" }), joining: 0, renewal: 0, jersey: 0, exp: 0 }); }
     if (selMonth >= months.length) selMonth = months.length - 1;
     const idx = new Map(months.map((m, i) => [m.key, i]));
-    payments.forEach((p) => { const k = payDate(p).slice(0, 7); if (idx.has(k)) { const t = ["renewal", "jersey"].includes(p.payment_type) ? p.payment_type : "joining"; months[idx.get(k)][t] += num(p.amount); } });
+    allRev.forEach((rr) => { const k = String(rr.date).slice(0, 7); if (idx.has(k)) months[idx.get(k)][rr.type] += rr.amount; });
     expenses.forEach((x) => { const k = expDate(x).slice(0, 7); if (idx.has(k)) months[idx.get(k)].exp += num(x.amount); });
     const maxV = Math.max(1, ...months.map((m) => Math.max(m.joining + m.renewal + m.jersey, m.exp)));
     const h = (v) => Math.round((v / maxV) * 150);
@@ -179,7 +192,7 @@
     $("monthDetail").innerHTML =
       `<span class="mn">${m.label}</span>` +
       `<span class="seg-amt" style="color:var(--tx-gold)">Revenue <b>${fmtMoney(rev)}</b></span>` +
-      `<span class="seg-amt" style="color:var(--tx-red)">Spend <b>${fmtMoney(m.exp)}</b></span>` +
+      `<span class="seg-amt" style="color:var(--c-exp)">Spend <b>${fmtMoney(m.exp)}</b></span>` +
       `<span class="net ${net >= 0 ? "pos" : "neg"}">Net <b>${fmtMoney(net)}</b></span>`;
   }
   // Tap a month → filter the whole page (KPIs, mix, categories, list) to it.
@@ -201,11 +214,11 @@
     $("expEmpty").classList.toggle("hide", rExps.length > 0);
     $("expBody").innerHTML = rExps.map((x) => `
       <tr><td class="num">${fmtDate(expDate(x))}</td><td>${esc(x.expense_type)}</td>
-      <td class="num" style="color:var(--tx-red);font-weight:650;">${fmtMoney(x.amount)}</td>
+      <td class="num" style="color:var(--c-exp);font-weight:650;">${fmtMoney(x.amount)}</td>
       <td>${esc(x.paid_by || "—")}</td><td class="faint">${esc(x.comment || "")}</td>
       <td><button class="btn btn-ghost btn-sm" data-del="${x.id}">Delete</button></td></tr>`).join("");
     $("expCards").innerHTML = rExps.map((x) => `
-      <article class="glass row-card"><div class="rc-top"><span class="rc-name">${esc(x.expense_type)}</span><span class="pill red num">${fmtMoney(x.amount)}</span></div>
+      <article class="glass row-card"><div class="rc-top"><span class="rc-name">${esc(x.expense_type)}</span><span class="pill num" style="color:var(--c-exp)">${fmtMoney(x.amount)}</span></div>
       <div class="rc-meta"><span class="pill">${fmtDate(expDate(x))}</span><span class="pill">${esc(x.paid_by || "—")}</span></div>
       ${x.comment ? `<p class="faint" style="font-size:12.5px;">${esc(x.comment)}</p>` : ""}
       <div class="rc-actions"><button class="btn btn-glass btn-sm" data-del="${x.id}">Delete</button></div></article>`).join("");
