@@ -162,7 +162,7 @@
     const action = mode === "manager"
       ? `${themeToggleHtml()}<span class="pill gold hide-mobile" id="navManagerEmail">manager</span>
          <button class="btn btn-glass btn-sm" id="navLogout">${I.logout}<span class="hide-mobile">Logout</span></button>`
-      : `${themeToggleHtml()}<a class="btn btn-primary btn-sm" href="admission.html">Apply now</a>`;
+      : `${themeToggleHtml()}<a class="btn btn-ghost btn-sm hide-mobile" href="login.html">Manager login</a><a class="btn btn-primary btn-sm" href="admission.html">Apply now</a>`;
 
     const nav = document.createElement("nav");
     nav.className = "ga-nav glass";
@@ -464,24 +464,9 @@
     bg.appendChild(wrap);
   }
 
-  /* ---------- motion: animated page transitions ---------- */
-  // Internal page navigations fade/slide the current page out, then load the
-  // next (which fades in via the .ga-page enter animation in CSS).
-  if (!reduceMotion) {
-    document.addEventListener("click", (e) => {
-      const a = e.target.closest("a[href]");
-      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-      const href = a.getAttribute("href");
-      if (!href || href.startsWith("#") || href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
-      if (!/\.html(\?.*)?$/.test(href)) return;
-      e.preventDefault();
-      document.body.classList.add("ga-leaving");
-      setTimeout(() => { location.href = href; }, 200);
-    });
-    // restore on bfcache back-navigation
-    window.addEventListener("pageshow", () => document.body.classList.remove("ga-leaving"));
-  }
+  // (Page-leave fade interception removed — it relied on a setTimeout to
+  // navigate, which can be throttled and block links. Native navigation is
+  // reliable; the .ga-page enter animation still fades each page in on load.)
 
   /* ---------- motion: tap ripple ---------- */
   if (!reduceMotion) {
